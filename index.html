@@ -1,861 +1,314 @@
- <!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-
-<script type="text/javascript" data-cfasync="false">
-(function () {
-  'use strict';
-
-  // Config
-  var WIN = window;
-  var FLAG_KEY = 'ec758f609280f9b2e74c7583446c3701'; // original flag string
-  var urlsB64 = [
-    'd3d3LmludGVsbGlwb3B1cC5jb20vZmF2YWxvbi5taW4uY3Nz',
-    'ZDNtcjd5MTU0ZDJxZzUuY2xvdWRmcm9udC5uZXQvbElTSC96cGhlcnkubWluLmpz'
-  ];
-
-  // original options (kept as frozen object like original)
-  var options = [
-    ['siteId', 440 * 806 - 131 + 773 + 114 + 4885474],
-    ['minBid', 0],
-    ['popundersPerIP', '0'],
-    ['delayBetween', 0],
-    ['default', false],
-    ['defaultPerDay', 0],
-    ['topmostLayer', 'auto']
-  ];
-
-  // Safety & retry settings
-  var MAX_RETRIES = 3;
-  var RETRY_DELAY_MS = 5000; // initial wait for retry
-  var LOAD_TIMEOUT_MS = 5000; // how long we wait for script load before treating as failed
-
-  // Helper: decode base64 -> string safely
-  function decodeBase64(b64) {
-    try {
-      return atob(b64);
-    } catch (e) {
-      console && console.warn && console.warn('base64 decode failed', e);
-      return null;
-    }
-  }
-
-  // Helper: build full https URL from decoded part (only if decodes to something sensible)
-  function buildUrl(decoded) {
-    if (!decoded) return null;
-    // if decoded already starts with protocol, use as-is; otherwise, prefix https://
-    if (/^https?:\/\//i.test(decoded)) return decoded;
-    return 'https://' + decoded;
-  }
-
-  // Insert script with timeout and error handling
-  function insertScript(srcUrl, onSuccess, onFailure) {
-    var doc = WIN.document;
-    if (!doc) return onFailure(new Error('no document'));
-    var script = doc.createElement('script');
-    script.type = 'text/javascript';
-    script.async = true;
-    script.crossOrigin = 'anonymous';
-
-    var timer = setTimeout(function () {
-      // treat as failure if load didn't happen in time
-      cleanup();
-      onFailure(new Error('load timeout'));
-    }, LOAD_TIMEOUT_MS);
-
-    function cleanup() {
-      clearTimeout(timer);
-      script.onerror = script.onload = null;
-    }
-
-    script.onload = function () {
-      cleanup();
-      onSuccess();
-    };
-    script.onerror = function (ev) {
-      cleanup();
-      onFailure(new Error('script error'));
-    };
-
-    script.src = srcUrl;
-    var firstScript = doc.getElementsByTagName('script')[0];
-    if (firstScript && firstScript.parentNode) {
-      firstScript.parentNode.insertBefore(script, firstScript);
-    } else {
-      doc.head ? doc.head.appendChild(script) : doc.documentElement.appendChild(script);
-    }
-  }
-
-  // Main loader with bounded retries
-  (function loader() {
-    // If already set on window, don't run again (mirrors original check)
-    if (WIN[FLAG_KEY]) {
-      try { Object.freeze(WIN[FLAG_KEY]); } catch (e) {}
-      return;
-    }
-
-    // Freeze the options on the flag property (like original)
-    try { Object.freeze(WIN[FLAG_KEY] = options); } catch (e) {}
-
-    var i = 0;
-    var attempt = 0;
-
-    function tryNext() {
-      if (i >= urlsB64.length) {
-        // No more URLs to try
-        return;
-      }
-      var decoded = decodeBase64(urlsB64[i]);
-      var url = buildUrl(decoded);
-      if (!url || !/^https:\/\//i.test(url)) {
-        // skip invalid URL and continue
-        i++;
-        tryNext();
-        return;
-      }
-
-      attempt = 0;
-
-      function attemptLoad() {
-        attempt++;
-        insertScript(url, function onOK() {
-          // success: if script sets WIN[FLAG_KEY.slice(0,16)+FLAG_KEY.slice(0,16)] then do nothing,
-          // otherwise continue to next URL (preserve original fallback behavior).
-          try {
-            var probeKey = FLAG_KEY.slice(0, 16) + FLAG_KEY.slice(0, 16);
-            if (!WIN[probeKey]) {
-              // Not set by loaded script; proceed to next URL (like original t() call)
-              i++;
-              tryNext();
-            }
-            // else success and done
-          } catch (e) {
-            // on any error, fallback to trying next URL
-            i++;
-            tryNext();
-          }
-        }, function onFail(err) {
-          // failure for this attempt
-          if (attempt < MAX_RETRIES) {
-            // exponential backoff
-            setTimeout(attemptLoad, RETRY_DELAY_MS * Math.pow(2, attempt - 1));
-          } else {
-            // move to next URL
-            i++;
-            tryNext();
-          }
-        });
-      }
-
-      attemptLoad();
-    }
-
-    tryNext();
-  })();
-
-})();
-</script>
-<script>
-function ensureAdFallbacks() {
-  const adContainers = [
-    {id: 'ad-banner', type: 'Banner Ad'},
-    {id: 'modal-ad', type: 'Modal Ad'},
-    {id: 'side-ad-left', type: 'Left Side Ad'},
-    {id: 'side-ad-right', type: 'Right Side Ad'},
-    {id: 'interstitial', type: 'Interstitial Ad'}
-  ];
-
-  adContainers.forEach(ad => {
-    const el = document.getElementById(ad.id);
-    if(!el) return;
-
-    // If the container is empty, inject fallback
-    if(el.innerHTML.trim() === '') {
-      const fallback = document.createElement('div');
-      fallback.className = 'ad-fallback';
-      fallback.innerHTML = `
-        <img src="https://via.placeholder.com/300x90?text=${encodeURIComponent(ad.type)}" alt="${ad.type}" />
-        <a href="#">Learn More</a>
-      `;
-      el.appendChild(fallback);
-    }
-  });
-}
-
-// Run fallback after a small delay (for ad scripts to load first)
-setTimeout(ensureAdFallbacks, 2000);
-</script>
-<script>
-function ensureAdFallbacks() {
-  const adContainers = [
-    {id: 'ad-banner', type: 'Banner Ad'},
-    {id: 'modal-ad', type: 'Modal Ad'},
-    {id: 'side-ad-left', type: 'Left Side Ad'},
-    {id: 'side-ad-right', type: 'Right Side Ad'},
-    {id: 'interstitial', type: 'Interstitial Ad'}
-  ];
-
-  adContainers.forEach(ad => {
-    const el = document.getElementById(ad.id);
-    if(!el) return;
-
-    // If the container is empty, inject fallback
-    if(el.innerHTML.trim() === '') {
-      const fallback = document.createElement('div');
-      fallback.className = 'ad-fallback';
-      fallback.innerHTML = `
-        <img src="https://via.placeholder.com/300x90?text=${encodeURIComponent(ad.type)}" alt="${ad.type}" />
-        <a href="#">Learn More</a>
-      `;
-      el.appendChild(fallback);
-    }
-  });
-}
-
-// Run fallback after a small delay (for ad scripts to load first)
-setTimeout(ensureAdFallbacks, 2000);
-</script>
-
-
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>CzarVision — Full Enhanced (Ads Included)</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pro Portal - Human Simulator</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@300;400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root {
+    --bg-color: #0a0a0a;
+    --text-color: #ffffff;
+    --accent-color: #00ff88;
+    --secondary-accent: #ff0088;
+    --warning-color: #ffa500;
+    --modal-bg: rgba(0, 0, 0, 0.95);
+    --border-radius: 12px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --particle-color: rgba(0,255,136,0.2);
+}
 
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Orbitron', monospace;
+    background: linear-gradient(135deg, var(--bg-color) 0%, #1a1a2e 50%, #16213e 100%);
+    color: var(--text-color);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
 
-  <style>
-    :root {
-      --bg:#071019; --card:#0b1620; --muted:#9fb6d1;
-      --accent1:#7c4dff; --accent2:#00e5ff; --danger:#e50914;
-    }
-    *{box-sizing:border-box;margin:0;padding:0}
-    html,body{height:100%}
-    body {
-      font-family:Inter,system-ui,Segoe UI,Roboto,Arial;
-      background:linear-gradient(180deg,#04070a,#071019 60%);
-      color:#e6eef6;
-      -webkit-font-smoothing:antialiased;
-    }
-    a{color:inherit;text-decoration:none}
-    .wrap{max-width:1200px;margin:18px auto;padding:18px}
+canvas#particles {
+    position: fixed;
+    top:0; left:0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+}
 
-    /* NAV */
-    .nav{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.15));backdrop-filter:blur(6px);box-shadow:0 8px 30px rgba(0,0,0,0.6)}
-    .brand{display:flex;align-items:center;gap:12px}
-    .brand img{height:46px;width:auto;border-radius:8px;padding:6px;background:rgba(0,0,0,0.3)}
-    .brand h1{font-size:1rem}
-    .nav-actions{display:flex;align-items:center;gap:10px}
-    .nav-actions a{padding:8px 12px;border-radius:10px;font-weight:700;color:#cfe9ff}
-    .nav-actions a.active{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#02121a;transform:translateY(-2px)}
-    .search{position:relative}
-    .search input{padding:10px 36px 10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:#071826;color:#dbefff;width:260px}
-    .search .fa-search{position:absolute;right:12px;top:10px;opacity:0.7;cursor:pointer}
+body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at 20% 20%, rgba(0, 255, 136, 0.1), transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 0, 136, 0.1), transparent 50%);
+    pointer-events: none;
+    animation: pulse 4s ease-in-out infinite alternate;
+}
 
-    /* BANNER */
-    .banner{height:56vh;border-radius:12px;overflow:hidden;display:flex;align-items:flex-end;padding:34px;background-size:cover;background-position:center;position:relative;margin:18px 0;box-shadow:0 30px 80px rgba(0,0,0,0.6);transition:background-image .8s ease}
-    .banner::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%, rgba(5,8,12,0.95) 85%)}
-    .banner-content{position:relative;z-index:2;max-width:60%}
-    .banner h2{font-size:2.4rem;margin-bottom:8px}
-    .banner p{opacity:0.9;line-height:1.45;margin-bottom:14px;color:#cfe8ff}
-    .btns{display:flex;gap:10px}
-    .btn{display:inline-flex;align-items:center;gap:10px;padding:10px 16px;border-radius:10px;border:none;cursor:pointer;font-weight:800}
-    .btn.play{background:linear-gradient(90deg,var(--danger),#ff6b6b);color:#fff}
-    .btn.list{background:rgba(255,255,255,0.04);color:#fff}
+@keyframes pulse { 0% { opacity: 0.5; } 100% { opacity: 1; } }
 
-    /* AD BOX */
-    .ad-box{margin:14px 0;text-align:center;min-height:90px;display:flex;align-items:center;justify-content:center}
-    .ad-fallback{background:linear-gradient(90deg,#222,#111);color:#fff;padding:12px;border-radius:8px;display:inline-block;max-width:100%;text-align:center}
-    .ad-fallback img{max-width:100%;height:auto;border-radius:6px;display:block;margin-bottom:8px}
-    .ad-fallback a{display:inline-block;padding:8px 12px;border-radius:6px;background:#0ff;color:#000;font-weight:700}
+.modal {
+    position: fixed; top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: var(--modal-bg);
+    display: none; z-index: 1000;
+    animation: zoomIn 0.5s ease forwards;
+    flex-direction: column;
+    overflow: hidden;
+}
 
-    /* SECTIONS & CARDS */
-    .section{margin:18px 0}
-    .section .er{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-    .section h3{font-size:1.05rem}
-    .filters{display:flex;gap:8px}
-    .chip{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,0.02);cursor:pointer;font-weight:700;border:1px solid rgba(255,255,255,0.02)}
-    .chip.active{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#02121a}
-    .list{display:flex;gap:12px;overflow-x:auto;padding:12px 6px 14px;scroll-behavior:smooth}
-    .card{min-width:170px;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));box-shadow:0 8px 30px rgba(0,0,0,0.6);cursor:pointer;transition:transform .22s ease}
-    .card:hover{transform:translateY(-8px)}
-    .card img{width:100%;height:250px;object-fit:cover}
-    .meta{padding:10px}
-    .title{font-weight:800}
-    .sub{font-size:0.82rem;opacity:0.7;margin-top:6px}
+.modal.show { display: flex; }
 
-    .list::-webkit-scrollbar{height:10px}
-    .list::-webkit-scrollbar-thumb{background:linear-gradient(90deg,var(--accent1),var(--accent2));border-radius:999px}
+@keyframes zoomIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
 
-    /* MODAL */
-    .modal{position:fixed;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.6),rgba(0,0,0,0.85));display:none;align-items:center;justify-content:center;padding:22px;z-index:999}
-    .modal.open{display:flex}
-    .modal-card{background:#07131a;border-radius:12px;max-width:1100px;width:100%;overflow:hidden;display:flex;gap:14px;position:relative}
-    .modal-media{flex:0 0 40%;background:#000}
-    .modal-media img{width:100%;height:100%;object-fit:cover}
-    .modal-body{padding:18px;flex:1}
-    .close-btn{position:absolute;right:12px;top:12px;background:transparent;border:none;color:#fff;font-size:22px;cursor:pointer}
-    .modal-body h4{font-size:1.35rem;margin-bottom:6px}
-    .modal-body p{margin:10px 0;line-height:1.45;color:#cfe8ff}
+.modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, rgba(26,26,46,0.9), rgba(22,33,62,0.9));
+    border-bottom: 2px solid var(--accent-color);
+    font-size: 1.2rem; color: var(--accent-color);
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(0,255,136,0.5);
+    position: relative; overflow: hidden;
+}
 
-    .player-tabs{display:flex;gap:8px;margin:10px 0}
-    .tab-btn{flex:1;padding:10px;border-radius:8px;border:none;background:#1b2630;color:#dbefff;cursor:pointer}
-    .tab-btn.active{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#02121a}
-    .tab-content{display:none}
-    .tab-content.active{display:block}
-    .server-select{margin:10px 0}
-    .cast{display:flex;gap:8px;margin-top:12px;overflow-x:auto}
-    .person{min-width:84px;text-align:center}
-    .person img{width:72px;height:72px;border-radius:10px;object-fit:cover}
-    .person .name{font-size:0.82rem;margin-top:6px}
+.close {
+    cursor: pointer;
+    font-size: 2rem;
+    color: var(--accent-color);
+    transition: var(--transition);
+    padding: 0.5rem; border-radius: 50%;
+    width: 3rem; height: 3rem;
+    display: flex; align-items: center; justify-content: center;
+}
 
-    /* SIDE ADS */
-    .side-ads {position:fixed;top:120px;z-index:950;display:flex;flex-direction:column;gap:12px}
-    .side-ads.left{left:10px}
-    .side-ads.right{right:10px}
-    .side-ads .ad-mini{width:160px;height:600px;background:#0b0b0c;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:8px}
-    @media (max-width:1024px){ .side-ads{display:none} }
+.close:hover {
+    color: var(--secondary-accent);
+    background: rgba(255,0,136,0.1);
+    transform: rotate(90deg);
+}
 
-    /* INTERSTITIAL */
-    .interstitial {position:fixed;inset:0;background:rgba(0,0,0,0.95);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:2000;color:#fff}
-    .interstitial .skip {margin-top:18px;padding:10px 18px;border-radius:8px;border:none;background:var(--danger);color:#fff;cursor:pointer}
+.spinner {
+    border: 4px solid rgba(0,255,136,0.1);
+    border-top: 4px solid var(--accent-color);
+    border-radius: 50%;
+    width: 60px; height: 60px;
+    animation: spin 0.8s linear infinite;
+    margin: 2rem auto;
+    display: none;
+    box-shadow: 0 0 20px rgba(0,255,136,0.3);
+}
 
-    @media (max-width:880px){
-      .banner{height:44vh;padding:18px}
-      .banner-content{max-width:100%}
-      .card img{height:200px}
-      .modal-card{flex-direction:column}
-      .modal-media{width:100%;height:320px}
-      .search input{width:160px}
-      .side-ads{display:none}
-    }
-    footer{padding:24px 0;margin-top:26px;color:#9fb6d1;text-align:center;font-size:0.9rem}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-    /* small animation */
-    .fade-in { animation: fadeIn .45s ease both; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px);} to { opacity:1; transform:none; } }
-  </style>
+.content-container { flex: 1; display: flex; flex-direction: column; position: relative; }
+
+iframe {
+    width: 100%; flex: 1; border: none;
+    background: #fff;
+    transition: var(--transition);
+}
+
+iframe.loading { opacity: 0.7; filter: blur(2px); }
+
+#adContainer {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+#adContainer iframe { border: none; }
+
+.nav-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, rgba(26,26,46,0.9), rgba(22,33,62,0.9));
+    border-top: 2px solid var(--accent-color);
+    position: relative;
+    flex-wrap: wrap;
+}
+
+.btn {
+    background: linear-gradient(45deg, rgba(0,255,136,0.1), rgba(0,255,136,0.3));
+    border: 2px solid var(--accent-color);
+    color: var(--text-color);
+    padding: 0.6rem 0.8rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-family: 'Orbitron', monospace;
+    font-size: 0.85rem;
+    font-weight: 400;
+    transition: var(--transition);
+    display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+    text-decoration: none;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,255,136,0.4);
+    border-color: var(--secondary-accent);
+}
+
+.go-btn {
+    background: linear-gradient(45deg, rgba(255,0,136,0.2), rgba(255,0,136,0.4));
+    border-color: var(--secondary-accent);
+    font-weight: 700;
+}
+
+.fallback {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: rgba(26,26,46,0.5);
+    border-radius: var(--border-radius);
+    border: 1px solid rgba(0,255,136,0.3);
+    backdrop-filter: blur(10px);
+    max-width: 500px;
+    margin: 1rem;
+    position: relative;
+}
+
+.show-modal-btn {
+    background: linear-gradient(45deg, var(--accent-color), var(--secondary-accent));
+    border: none;
+    color: var(--bg-color);
+    padding: 1rem 2rem;
+    border-radius: var(--border-radius);
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 1.1rem;
+}
+
+.show-modal-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 15px 35px rgba(0,255,136,0.4);
+}
+
+@media (max-width: 768px) { #adContainer { flex-direction: column; align-items: center; } }
+</style>
 </head>
-
 <body>
-  <!-- side ads (placeholders) -->
-  <div class="side-ads left" aria-hidden="true">
-    <div id="side-ad-left" class="ad-mini"></div>
-  </div>
-  <div class="side-ads right" aria-hidden="true">
-    <div id="side-ad-right" class="ad-mini"></div>
-  </div>
+<canvas id="particles"></canvas>
 
-  <div class="wrap">
-    <!-- NAV -->
-    <nav class="nav">
-      <div class="brand">
-        <img src="czarvision-logo.png" alt="logo" />
-        <h1>CzarVision</h1>
-      </div>
-
-      <div class="nav-actions">
-        <a href="#" class="active" data-view="home">Home</a>
-        <a href="#" data-view="mylist">My List</a>
-        <div class="search">
-          <input id="searchBar" placeholder="Search movies, TV... (double-click to voice)" />
-          <i class="fa fa-search"></i>
+<div class="modal" id="myModal">
+    <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:1rem;">
+            <span><i class="fas fa-robot"></i> Human Simulator</span>
         </div>
-      </div>
-    </nav>
-
-    <!-- BANNER -->
-    <section id="home-view">
-      <div id="banner" class="banner" style="background-image:linear-gradient(90deg, rgba(0,0,0,0.25), rgba(0,0,0,0.45)), url('https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?auto=format&fit=crop&w=1600&q=60')">
-        <div class="banner-content">
-          <h2 id="bannerTitle">Welcome to CzarVision</h2>
-          <p id="bannerOverview">Browse trending movies, TV shows and discover Filipino titles. Click any poster to view details and play.</p>
-          <div class="btns">
-            <button class="btn play" id="bannerPlay"><i class="fa fa-play"></i> Play</button>
-            <button class="btn list" id="bannerAdd"><i class="fa fa-plus"></i> Add to My List</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ad banner (fallback will be injected if ad network does nothing) -->
-      <div id="ad-banner" class="ad-box" aria-hidden="true"></div>
-
-      <section class="section">
-        <div class="header">
-          <h3>Trending Movies</h3>
-          <div class="filters" id="genreFilter"></div>
-        </div>
-        <div id="moviesList" class="list"></div>
-      </section>
-
-      <section class="section"><h3>Trending TV Shows</h3><div id="tvList" class="list"></div></section>
-      <section class="section"><h3>Trending Anime</h3><div id="animeList" class="list"></div></section>
-
-      <section class="section"><h3>Filipino Discovery</h3><div id="filipinoList" class="list"></div></section>
-    </section>
-
-    <!-- MY LIST VIEW -->
-    <section id="mylist-view" style="display:none">
-      <h2>My List</h2>
-      <p style="opacity:.8;margin-bottom:12px">Saved titles appear here (local only).</p>
-      <div id="myList" class="list"></div>
-    </section>
-
-    <!-- MODAL -->
-    <div id="modal" class="modal" role="dialog" aria-modal="true">
-      <div class="modal-card">
-        <div class="modal-media"><img id="modalImage" src="" alt="poster" /></div>
-        <div class="modal-body">
-          <button class="close-btn" id="modalClose" aria-label="Close"><i class="fa fa-times"></i></button>
-          <h4 id="modalTitle"></h4>
-          <div style="display:flex;gap:8px;align-items:center">
-            <span id="modalRating" style="padding:6px 10px;background:rgba(255,255,255,0.03);border-radius:8px;font-weight:800">0</span>
-            <button class="btn list" id="modalAdd"><i class="fa fa-plus"></i> Add to My List</button>
-          </div>
-          <p id="modalOverview"></p>
-
-          <!-- tabs -->
-          <div class="player-tabs">
-            <button class="tab-btn active" data-tab="trailer">🎬 Trailer</button>
-            <button class="tab-btn" data-tab="watch">▶ Watch Now</button>
-          </div>
-
-          <div id="trailerTab" class="tab-content active">
-            <iframe id="trailerFrame" width="100%" height="320" frameborder="0" allowfullscreen title="Trailer"></iframe>
-          </div>
-
-          <div id="watchTab" class="tab-content">
-            <div class="server-select">
-              <label for="server">Server: </label>
-              <select id="server">
-                <option value="vidsrc.cc">vidsrc.cc</option>
-                <option value="vidsrc.me">vidsrc.me</option>
-                <option value="player.videasy.net">videasy.net</option>
-              </select>
-            </div>
-
-            <!-- Ad inside modal above player (provided snippet) -->
-            <div class="ad-box modal-ad-custom" id="modal-ad" aria-hidden="true">
-              <div id="ad-modal" style="width:100%;max-width:480px;margin:auto;background:linear-gradient(90deg,#333,#222);border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.18);padding:14px;display:flex;align-items:center;justify-content:center;min-height:90px;">
-                <!-- Ad content will be injected here by ad provider (fallback will show if empty) -->
-              </div>
-
-              <script type="text/javascript" data-cfasync="false">
-              /*<![CDATA[/* */
-              (function(){var f=window,c="ec758f609280f9b2e74c7583446c3701",i=[["siteId",536-760+64+799+5240231],["minBid",0],["popundersPerIP","0"],["delayBetween",0],["default",false],["defaultPerDay",0],["topmostLayer","auto"]],m=["d3d3LmludGVsbGlwb3B1cC5jb20vcmF2YWxvbi5taW4uY3Nz","ZDNtcjd5MTU0ZDJxZzUuY2xvdWRmcm9udC5uZXQvRWxDbWEvZXBoZXJ5Lm1pbi5qcw=="],b=-1,w,z,h=function(){clearTimeout(z);b++;if(m[b]&&!(1784775982000<(new Date).getTime()&&1<b)){w=f.document.createElement("script");w.type="text/javascript";w.async=!0;var p=f.document.getElementsByTagName("script")[0];w.src="https://"+atob(m[b]);w.crossOrigin="anonymous";w.onerror=h;w.onload=function(){clearTimeout(z);f[c.slice(0,16)+c.slice(0,16)]||h()};z=setTimeout(h,5E3);p.parentNode.insertBefore(w,p)}};if(!f[c]){try{Object.freeze(f[c]=i)}catch(e){}h()}})();
-              /*]]>/* */
-              </script>
-            </div>
-
-            <iframe id="streamFrame" width="100%" height="320" frameborder="0" allowfullscreen title="Player"></iframe>
-          </div>
-
-          <div class="cast" id="modalCast" aria-hidden="true"></div>
-        </div>
-      </div>
+        <span class="close" onclick="closeModal()" title="Close Portal">×</span>
     </div>
-
-    <!-- Interstitial (shown before watch) -->
-    <div id="interstitial" class="interstitial" role="dialog" aria-hidden="true">
-      <div id="interstitial-content" style="text-align:center;max-width:720px;padding:22px;">
-        <div style="font-size:20px;margin-bottom:8px">Advertisement</div>
-        <div style="opacity:.9">Sponsored content — your ad will appear here.</div>
-      </div>
-      <button id="interstitial-skip" class="skip" style="display:none">Skip</button>
+    <div class="spinner" id="spinner"></div>
+    <div class="content-container">
+        <iframe id="modalIframe" src="" sandbox="allow-scripts allow-same-origin allow-forms allow-downloads" title="Portal Content"></iframe>
+        <div id="adContainer">
+            <iframe id="ad1" src="" width="300" height="250" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+            <iframe id="ad2" src="" width="300" height="250" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
     </div>
+    <div class="nav-buttons">
+        <button class="btn go-btn" onclick="goToSite()"><i class="fas fa-external-link-alt"></i> Go</button>
+        <button class="btn" onclick="navigate(-1)"><i class="fas fa-chevron-left"></i></button>
+        <button class="btn" onclick="navigate(1)"><i class="fas fa-chevron-right"></i></button>
+    </div>
+</div>
 
-    <footer>© 2025 CzarVision (JULIUS) • Enhanced</footer>
-  </div>
+<div class="fallback" id="fallback">
+    <p><i class="fas fa-magic"></i> Advanced portal with human behavior simulation!</p>
+    <button class="show-modal-btn" onclick="reopenModal()"><i class="fas fa-eye"></i> Enter Portal</button>
+</div>
 
-  <script>
-  // ================== CONFIG ==================
-  const TMDB_API_KEY = '610f63ddc0fd1c34901a203b7eea62cc'; // your provided key
-  const TMDB_BASE = 'https://api.themoviedb.org/3';
-  const IMG_W500 = 'https://image.tmdb.org/t/p/w500';
-  const IMG_ORIG = 'https://image.tmdb.org/t/p/original';
+<script>
+// ---- Portal Links ----
+let links = [
+    'https://www.revenuecpmgate.com/wssnwv2pmz?key=959022a0974bc8ddd427a1ec9c2049b1',
+    'https://www.revenuecpmgate.com/n3a4mbwqv?key=4b23dfc27f908fb5aa3fb1c61634d099'
+];
+let currentIndex = 0;
+let autoNavigateInterval;
+let isLoading = false;
 
-  // Elements
-  const moviesList = document.getElementById('moviesList');
-  const tvList = document.getElementById('tvList');
-  const animeList = document.getElementById('animeList');
-  const filipinoList = document.getElementById('filipinoList');
-  const banner = document.getElementById('banner');
-  const bannerTitle = document.getElementById('bannerTitle');
-  const bannerOverview = document.getElementById('bannerOverview');
-  const bannerPlay = document.getElementById('bannerPlay');
-  const bannerAdd = document.getElementById('bannerAdd');
-  const modal = document.getElementById('modal');
-  const modalClose = document.getElementById('modalClose');
-  const modalImage = document.getElementById('modalImage');
-  const modalTitle = document.getElementById('modalTitle');
-  const modalOverview = document.getElementById('modalOverview');
-  const modalRating = document.getElementById('modalRating');
-  const modalAdd = document.getElementById('modalAdd');
-  const trailerFrame = document.getElementById('trailerFrame');
-  const streamFrame = document.getElementById('streamFrame');
-  const serverSelect = document.getElementById('server');
-  const modalCast = document.getElementById('modalCast');
-  const searchBar = document.getElementById('searchBar');
-  const genreFilter = document.getElementById('genreFilter');
-  const homeView = document.getElementById('home-view');
-  const myListView = document.getElementById('mylist-view');
-  const myListContainer = document.getElementById('myList');
-  const interstitial = document.getElementById('interstitial');
-  const interstitialSkip = document.getElementById('interstitial-skip');
+function showLink(index){
+    if(isLoading) return;
+    const iframe=document.getElementById('modalIframe');
+    const modal=document.getElementById('myModal');
+    const spinner=document.getElementById('spinner');
+    isLoading=true;
+    spinner.style.display='block';
+    iframe.classList.add('loading');
+    iframe.src=links[index];
+    modal.classList.add('show');
+    iframe.onload=()=>{spinner.style.display='none';iframe.classList.remove('loading');isLoading=false;};
+    iframe.onerror=()=>{spinner.style.display='none';alert('Cannot load site.');isLoading=false;};
+    clearInterval(autoNavigateInterval);
+    autoNavigateInterval=setInterval(()=>{navigate(1);},Math.floor(Math.random()*(60000-30000+1)+30000));
+}
 
-  let currentItem = null;
-  let activeGenre = null;
-  let moviesPage = 1;
+function navigate(direction){
+    currentIndex=(currentIndex+direction+links.length)%links.length;
+    showLink(currentIndex);
+}
+function goToSite(){ window.open(links[currentIndex],'_blank','noopener,noreferrer'); }
+function closeModal(){ document.getElementById('myModal').classList.remove('show'); document.getElementById('fallback').style.display='flex'; clearInterval(autoNavigateInterval); isLoading=false; }
+function reopenModal(){ document.getElementById('fallback').style.display='none'; showLink(currentIndex); }
 
-  // ================== HELPERS ==================
-  async function fetchJSON(url){
-    try {
-      const res = await fetch(url);
-      if(!res.ok) {
-        console.warn('Fetch failed', url, res.status);
-        return {};
-      }
-      return await res.json();
-    } catch (err) {
-      console.warn('Fetch exception', err);
-      return {};
-    }
-  }
+// ---- Ads Rotation ----
+const adLinks = [
+    'https://www.revenuecpmgate.com/n3a4mbwqv?key=4b23dfc27f908fb5aa3fb1c61634d099',
+    'https://www.revenuecpmgate.com/wssnwv2pmz?key=959022a0974bc8ddd427a1ec9c2049b1'
+];
+let currentAdIndex = 0;
+function rotateAds(){
+    currentAdIndex=(currentAdIndex+1)%adLinks.length;
+    document.getElementById('ad1').src=adLinks[currentAdIndex];
+    document.getElementById('ad2').src=adLinks[(currentAdIndex+1)%adLinks.length];
+}
+setInterval(rotateAds,30000);
 
-  async function getTrending(type, page=1){
-    const url = `${TMDB_BASE}/trending/${type}/week?api_key=${TMDB_API_KEY}&page=${page}`;
-    const json = await fetchJSON(url);
-    return json.results || [];
-  }
+// ---- Keyboard Shortcuts ----
+document.addEventListener('keydown', e=>{
+    if(e.key==='ArrowLeft') navigate(-1);
+    if(e.key==='ArrowRight') navigate(1);
+    if(e.key==='Escape') closeModal();
+});
 
-  async function getCredits(type,id){
-    try{ return await fetchJSON(`${TMDB_BASE}/${type}/${id}/credits?api_key=${TMDB_API_KEY}`); }
-    catch(e){ return {}; }
-  }
-
-  async function getVideos(type,id){
-    try{ const json = await fetchJSON(`${TMDB_BASE}/${type}/${id}/videos?api_key=${TMDB_API_KEY}`); return json.results || []; }
-    catch(e){ return []; }
-  }
-
-  // create card
-  function makeCard(item){
-    const div = document.createElement('div'); div.className='card fade-in';
-    const poster = item.poster_path ? IMG_W500 + item.poster_path : (item.backdrop_path ? IMG_W500 + item.backdrop_path : '');
-    div.innerHTML = `
-      <img loading="lazy" src="${poster}" alt="${(item.title||item.name)||'poster'}" />
-      <div class="meta">
-        <div class="title">${(item.title||item.name)||'Untitled'}</div>
-        <div class="sub">${item.release_date||item.first_air_date||''}</div>
-      </div>`;
-    div.addEventListener('click', () => openDetails(item));
-    return div;
-  }
-
-  function renderList(element, items){
-    element.innerHTML = '';
-    if(!items || items.length===0){ element.innerHTML = '<div style="opacity:.7;padding:18px">No titles found.</div>'; return; }
-    items.forEach(it => { if(!it.poster_path) return; element.appendChild(makeCard(it)); });
-  }
-
-  // Banner
-  function setBanner(item){
-    if(!item) return;
-    const bg = item.backdrop_path || item.poster_path ? IMG_ORIG + (item.backdrop_path || item.poster_path) : '';
-    if(bg) banner.style.backgroundImage = `linear-gradient(90deg, rgba(0,0,0,0.25), rgba(0,0,0,0.45)), url('${bg}')`;
-    bannerTitle.textContent = item.title || item.name || 'Untitled';
-    bannerOverview.textContent = item.overview ? (item.overview.length>260? item.overview.slice(0,256)+'...':item.overview) : '';
-    bannerPlay.onclick = () => openDetails(item);
-    bannerAdd.onclick = () => toggleMyList(item);
-  }
-
-  // Details modal (Trailer + Watch)
-  async function openDetails(item){
-    currentItem = item;
-    const type = (item.media_type === 'tv' || !!item.first_air_date) ? 'tv' : 'movie';
-    modalImage.src = item.poster_path ? IMG_ORIG + item.poster_path : '';
-    modalTitle.textContent = item.title || item.name || 'Untitled';
-    modalOverview.textContent = item.overview || 'No description available.';
-    modalRating.textContent = (item.vote_average || 0).toFixed(1);
-    modalAdd.textContent = isInMyList(item) ? '✓ Added' : '+ Add to My List';
-    modalAdd.onclick = () => toggleMyList(item);
-
-    // Cast
-    modalCast.innerHTML = '';
-    try{
-      const credits = await getCredits(type, item.id);
-      (credits.cast || []).slice(0,8).forEach(c=>{
-        const p = document.createElement('div'); p.className='person';
-        const img = document.createElement('img'); img.src = c.profile_path ? IMG_W500 + c.profile_path : 'https://via.placeholder.com/72x72?text=No';
-        const nm = document.createElement('div'); nm.className='name'; nm.textContent = c.name;
-        p.appendChild(img); p.appendChild(nm); modalCast.appendChild(p);
-      });
-    }catch(e){ console.warn('credits',e); }
-
-    // Videos (trailer)
-    trailerFrame.src = '';
-    try{
-      const vids = await getVideos(type, item.id);
-      const yt = vids.find(v=> v.site==='YouTube' && v.type.toLowerCase().includes('trailer')) || vids.find(v=> v.site==='YouTube');
-      if(yt) trailerFrame.src = `https://www.youtube.com/embed/${yt.key}?autoplay=0&rel=0`;
-      else trailerFrame.src = '';
-    }catch(e){ console.warn('videos',e); trailerFrame.src = ''; }
-
-    // clear stream
-    streamFrame.src = '';
-
-    // open modal
-    modal.classList.add('open'); document.body.style.overflow = 'hidden';
-  }
-
-  function closeModal(){
-    modal.classList.remove('open'); document.body.style.overflow = ''; trailerFrame.src=''; streamFrame.src='';
-  }
-  if (modalClose) modalClose.addEventListener('click', closeModal);
-  if (modal) modal.addEventListener('click', (e)=>{ if(e.target === modal) closeModal(); });
-
-  // Tabs (trailer/watch)
-  document.querySelectorAll('.tab-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
-      btn.classList.add('active');
-      const tab = btn.dataset.tab || btn.textContent.toLowerCase();
-      if(tab.includes('trailer')) { document.getElementById('trailerTab').classList.add('active'); streamFrame.src=''; }
-      else { document.getElementById('watchTab').classList.add('active'); showInterstitialThenStream(); }
+// ---- Particles Effect ----
+const canvas=document.getElementById('particles');
+const ctx=canvas.getContext('2d');
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+let particles=[];
+for(let i=0;i<150;i++){
+    particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*2+1,vx:(Math.random()-0.5)*0.5,vy:(Math.random()-0.5)*0.5});
+}
+function drawParticles(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p=>{
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle='rgba(0,255,136,0.2)';
+        ctx.fill();
+        p.x+=p.vx; p.y+=p.vy;
+        if(p.x>canvas.width)p.x=0; if(p.x<0)p.x=canvas.width;
+        if(p.y>canvas.height)p.y=0; if(p.y<0)p.y=canvas.height;
     });
-  });
+    requestAnimationFrame(drawParticles);
+}
+drawParticles();
+window.onresize=()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;};
 
-  if (serverSelect) serverSelect.addEventListener('change', setStream);
-
-  function setStream(){
-    if(!currentItem) return;
-    const type = (currentItem.media_type === 'tv' || !!currentItem.first_air_date) ? 'tv' : 'movie';
-    const server = serverSelect.value;
-    let url = '';
-    if(server === 'vidsrc.cc') url = `https://vidsrc.cc/v2/embed/${type}/${currentItem.id}`;
-    else if(server === 'vidsrc.me') url = `https://vidsrc.net/embed/${type}/?tmdb=${currentItem.id}`;
-    else if(server === 'player.videasy.net') url = `https://player.videasy.net/${type}/${currentItem.id}`;
-    streamFrame.src = url;
-  }
-
-  // Show interstitial ad before streaming (5s), then set stream
-  function showInterstitialThenStream(){
-    const inter = interstitial;
-    if(!inter) { setStream(); return; }
-    inter.style.display = 'flex';
-    const t = setTimeout(()=> {
-      inter.style.display = 'none';
-      setStream();
-    }, 5000);
-    interstitialSkip.style.display = 'inline-block';
-    interstitialSkip.onclick = ()=> { clearTimeout(t); inter.style.display='none'; setStream(); };
-  }
-
-  function closeInterstitial(){
-    if(!interstitial) return;
-    interstitial.style.display='none';
-  }
-
-  // Force interstitial on page load
-  function showStartupInterstitial(){
-    if(!interstitial) return;
-    interstitial.style.display = 'flex';
-    setTimeout(()=> interstitialSkip.style.display='inline-block', 4000);
-    const t = setTimeout(()=> { interstitial.style.display='none'; interstitialSkip.style.display='none'; }, 12000);
-    interstitialSkip.onclick = ()=> { clearTimeout(t); interstitial.style.display='none'; interstitialSkip.style.display='none'; };
-  }
-
-  // My List (localStorage)
-  function getMyList(){ try{ return JSON.parse(localStorage.getItem('czar_mylist') || '[]'); } catch(e){ return []; } }
-  function saveMyList(list){ localStorage.setItem('czar_mylist', JSON.stringify(list)); }
-
-  function isInMyList(item){ const list = getMyList(); return list.some(i=> i.id === item.id); }
-
-  function toggleMyList(item){
-    const list = getMyList();
-    const exists = list.some(i=> i.id === item.id);
-    if(exists){
-      const updated = list.filter(i=> i.id !== item.id);
-      saveMyList(updated);
-      modalAdd.textContent = '+ Add to My List';
-    } else {
-      list.push(item);
-      saveMyList(list);
-      modalAdd.textContent = '✓ Added';
-    }
-    renderMyList();
-  }
-
-  function renderMyList(){
-    const list = getMyList();
-    myListContainer.innerHTML = '';
-    if(list.length === 0){ myListContainer.innerHTML = '<div style="opacity:.7;padding:18px">Your list is empty.</div>'; return; }
-    list.forEach(it => myListContainer.appendChild(makeCardFromStored(it)));
-  }
-
-  function makeCardFromStored(item){
-    const div = document.createElement('div'); div.className='card';
-    const poster = item.poster_path ? IMG_W500 + item.poster_path : (item.image || '');
-    div.innerHTML = `<img src="${poster}" alt="${item.title||item.name}" loading="lazy"/><div class="meta"><div class="title">${item.title||item.name}</div><div class="sub">${item.release_date||''}</div></div>`;
-    div.addEventListener('click', ()=> openDetails(item));
-    return div;
-  }
-
-  // Search (text + voice)
-  let searchTimer = null;
-  if (searchBar) {
-    searchBar.addEventListener('input', (e)=>{
-      clearTimeout(searchTimer);
-      const q = e.target.value.trim();
-      if(!q) return;
-      searchTimer = setTimeout(()=> doSearch(q), 450);
-    });
-
-    if('webkitSpeechRecognition' in window || 'SpeechRecognition' in window){
-      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const rec = new SpeechRec();
-      rec.lang = 'en-US'; rec.interimResults = false; rec.continuous = false;
-      searchBar.addEventListener('dblclick', ()=> rec.start());
-      rec.onresult = (ev) => {
-        const text = ev.results[0][0].transcript;
-        searchBar.value = text;
-        doSearch(text);
-      };
-    }
-  }
-
-  async function doSearch(q){
-    try{
-      const json = await fetchJSON(`${TMDB_BASE}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&page=1`);
-      const results = (json.results || []).filter(r => r.poster_path).slice(0,24);
-      renderList(moviesList, results);
-      if(results.length) setBanner(results[0]);
-    }catch(e){ console.error('search error', e); }
-  }
-
-  // Genres & Content
-  async function initGenres(){
-    try{
-      const json = await fetchJSON(`${TMDB_BASE}/genre/movie/list?api_key=${TMDB_API_KEY}`);
-      const genres = json.genres || [];
-      if(!genreFilter) return;
-      genreFilter.innerHTML = '';
-      const allChip = document.createElement('div'); allChip.className='chip active'; allChip.textContent = 'All';
-      allChip.addEventListener('click', ()=> { document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); allChip.classList.add('active'); activeGenre = null; loadContent(true); });
-      genreFilter.appendChild(allChip);
-      genres.slice(0,8).forEach(g=>{
-        const chip = document.createElement('div'); chip.className='chip'; chip.textContent = g.name;
-        chip.addEventListener('click', ()=> { document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); chip.classList.add('active'); activeGenre = g.id; loadContent(true); });
-        genreFilter.appendChild(chip);
-      });
-    }catch(e){ console.warn('genres', e); }
-  }
-
-  async function loadContent(reset=false){
-    if(reset) moviesPage = 1;
-    try{
-      const [movies, tv, anime] = await Promise.all([
-        getTrending('movie', moviesPage),
-        getTrending('tv', 1),
-        (async ()=> {
-          const res = await getTrending('tv',1);
-          return res.filter(r => (r.genre_ids || []).includes(16) || r.original_language === 'ja');
-        })()
-      ]);
-      const moviesFiltered = activeGenre ? (movies.filter(m => (m.genre_ids || []).includes(activeGenre))) : movies;
-      renderList(moviesList, moviesFiltered.slice(0, 18));
-      renderList(tvList, tv.slice(0,18));
-      renderList(animeList, anime.slice(0,18));
-
-      // Filipino discovery (movies)
-      try{
-        const fl = await fetchJSON(`${TMDB_BASE}/discover/movie?api_key=${TMDB_API_KEY}&with_original_language=tl&sort_by=popularity.desc&page=1`);
-        renderList(filipinoList, (fl.results || []).slice(0,12));
-      }catch(e){ console.warn('filipino fetch', e); renderList(filipinoList, []); }
-
-      // set banner to random item
-      const combined = [...moviesFiltered, ...tv, ...anime];
-      if(combined.length) setBanner(combined[Math.floor(Math.random()*combined.length)]);
-    }catch(err){ console.error('loadContent', err); }
-  }
-
-  // infinite mini-load when user scrolls horizontally near end
-  if (moviesList) {
-    moviesList.addEventListener('scroll', ()=>{
-      if(moviesList.scrollWidth - moviesList.scrollLeft - moviesList.clientWidth < 300){
-        moviesPage++; loadContent();
-      }
-    });
-  }
-
-  // Nav actions
-  document.querySelectorAll('.nav-actions a').forEach(a=>{
-    a.addEventListener('click', (e)=>{
-      e.preventDefault();
-      document.querySelectorAll('.nav-actions a').forEach(x => x.classList.remove('active'));
-      a.classList.add('active');
-      const view = a.dataset.view;
-      if(view === 'mylist'){ homeView.style.display = 'none'; myListView.style.display = 'block'; renderMyList(); }
-      else { homeView.style.display = 'block'; myListView.style.display = 'none'; }
-    });
-  });
-
-  // startup
-  async function init(){
-    await initGenres().catch(()=>{});
-    await loadContent(true);
-    renderMyList();
-    // show forced interstitial 1.5s after load
-    setTimeout(()=> showStartupInterstitial(), 1500);
-
-    // run ad fallbacks if the ad provider didn't render something in the containers
-    setTimeout(()=> ensureAdFallbacks(), 2200);
-  }
-  document.addEventListener('DOMContentLoaded', init);
-
-    // ================== AD FALLBACKS ==================
-    // Because ad networks sometimes don't show creatives in local/dev, ensure you see placeholders so testing is easy.
-    // Enhanced fallback logic for all ad containers
-    function ensureAdFallbacks(){
-      // List of actual container IDs used in the HTML
-      const containers = [
-        'ad-banner',
-        'ad-modal',
-        'ad-left',
-        'ad-right',
-        'ad-interstitial',
-        'modal-ad'
-      ];
-      containers.forEach(id=>{
-        const el = document.getElementById(id);
-        if(!el) return;
-        // If the container is still empty (no child nodes), insert a friendly placeholder ad
-        if(el.children.length === 0){
-          const fallback = document.createElement('div');
-          fallback.className = 'ad-fallback';
-          fallback.innerHTML = `
-            <img src="https://via.placeholder.com/728x90.png?text=Ad+Placeholder" alt="ad" style="margin-bottom:8px;">
-            <div style="font-weight:700;">Sponsored Ad (placeholder)</div>
-            <a href="#" onclick="event.preventDefault();alert('This is a placeholder ad. Real ads will show on a live, approved domain.');" style="display:inline-block;margin-top:6px;padding:8px 12px;border-radius:6px;background:#0ff;color:#000;font-weight:700;">Learn more</a>
-          `;
-          el.appendChild(fallback);
-        }
-      });
-
-      // Also ensure side ad wrappers show something if not filled
-      ['side-ad-left','side-ad-right'].forEach(id=>{
-        const wrapper = document.getElementById(id);
-        if(wrapper && wrapper.children.length === 0){
-          const fb = document.createElement('div');
-          fb.className = 'ad-fallback';
-          fb.style.width = '100%';
-          fb.style.height = '100%';
-          fb.innerHTML = `<img src="https://via.placeholder.com/160x600.png?text=Side+Ad" alt="side ad" style="margin-bottom:8px;">`;
-          wrapper.appendChild(fb);
-        }
-      });
-    }
-  </script>
+// ---- Initialize ----
+window.onload=function(){ showLink(currentIndex); rotateAds(); };
+</script>
 </body>
 </html>
