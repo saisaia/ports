@@ -1,163 +1,15 @@
 <!doctype html>
 <html lang="en">
-
 <script type="text/javascript" data-cfasync="false">
-(function () {
-  'use strict';
-
-  // Config
-  var WIN = window;
-  var FLAG_KEY = 'ec758f609280f9b2e74c7583446c3701'; // original flag string
-  var urlsB64 = [
-    'd3d3LmludGVsbGlwb3B1cC5jb20vZmF2YWxvbi5taW4uY3Nz',
-    'ZDNtcjd5MTU0ZDJxZzUuY2xvdWRmcm9udC5uZXQvbElTSC96cGhlcnkubWluLmpz'
-  ];
-
-  // original options (kept as frozen object like original)
-  var options = [
-    ['siteId', 440 * 806 - 131 + 773 + 114 + 4885474],
-    ['minBid', 0],
-    ['popundersPerIP', '0'],
-    ['delayBetween', 0],
-    ['default', false],
-    ['defaultPerDay', 0],
-    ['topmostLayer', 'auto']
-  ];
-
-  // Safety & retry settings
-  var MAX_RETRIES = 3;
-  var RETRY_DELAY_MS = 5000; // initial wait for retry
-  var LOAD_TIMEOUT_MS = 5000; // how long we wait for script load before treating as failed
-
-  // Helper: decode base64 -> string safely
-  function decodeBase64(b64) {
-    try {
-      return atob(b64);
-    } catch (e) {
-      console && console.warn && console.warn('base64 decode failed', e);
-      return null;
-    }
-  }
-
-  // Helper: build full https URL from decoded part (only if decodes to something sensible)
-  function buildUrl(decoded) {
-    if (!decoded) return null;
-    // if decoded already starts with protocol, use as-is; otherwise, prefix https://
-    if (/^https?:\/\//i.test(decoded)) return decoded;
-    return 'https://' + decoded;
-  }
-
-  // Insert script with timeout and error handling
-  function insertScript(srcUrl, onSuccess, onFailure) {
-    var doc = WIN.document;
-    if (!doc) return onFailure(new Error('no document'));
-    var script = doc.createElement('script');
-    script.type = 'text/javascript';
-    script.async = true;
-    script.crossOrigin = 'anonymous';
-
-    var timer = setTimeout(function () {
-      // treat as failure if load didn't happen in time
-      cleanup();
-      onFailure(new Error('load timeout'));
-    }, LOAD_TIMEOUT_MS);
-
-    function cleanup() {
-      clearTimeout(timer);
-      script.onerror = script.onload = null;
-    }
-
-    script.onload = function () {
-      cleanup();
-      onSuccess();
-    };
-    script.onerror = function (ev) {
-      cleanup();
-      onFailure(new Error('script error'));
-    };
-
-    script.src = srcUrl;
-    var firstScript = doc.getElementsByTagName('script')[0];
-    if (firstScript && firstScript.parentNode) {
-      firstScript.parentNode.insertBefore(script, firstScript);
-    } else {
-      doc.head ? doc.head.appendChild(script) : doc.documentElement.appendChild(script);
-    }
-  }
-
-  // Main loader with bounded retries
-  (function loader() {
-    // If already set on window, don't run again (mirrors original check)
-    if (WIN[FLAG_KEY]) {
-      try { Object.freeze(WIN[FLAG_KEY]); } catch (e) {}
-      return;
-    }
-
-    // Freeze the options on the flag property (like original)
-    try { Object.freeze(WIN[FLAG_KEY] = options); } catch (e) {}
-
-    var i = 0;
-    var attempt = 0;
-
-    function tryNext() {
-      if (i >= urlsB64.length) {
-        // No more URLs to try
-        return;
-      }
-      var decoded = decodeBase64(urlsB64[i]);
-      var url = buildUrl(decoded);
-      if (!url || !/^https:\/\//i.test(url)) {
-        // skip invalid URL and continue
-        i++;
-        tryNext();
-        return;
-      }
-
-      attempt = 0;
-
-      function attemptLoad() {
-        attempt++;
-        insertScript(url, function onOK() {
-          // success: if script sets WIN[FLAG_KEY.slice(0,16)+FLAG_KEY.slice(0,16)] then do nothing,
-          // otherwise continue to next URL (preserve original fallback behavior).
-          try {
-            var probeKey = FLAG_KEY.slice(0, 16) + FLAG_KEY.slice(0, 16);
-            if (!WIN[probeKey]) {
-              // Not set by loaded script; proceed to next URL (like original t() call)
-              i++;
-              tryNext();
-            }
-            // else success and done
-          } catch (e) {
-            // on any error, fallback to trying next URL
-            i++;
-            tryNext();
-          }
-        }, function onFail(err) {
-          // failure for this attempt
-          if (attempt < MAX_RETRIES) {
-            // exponential backoff
-            setTimeout(attemptLoad, RETRY_DELAY_MS * Math.pow(2, attempt - 1));
-          } else {
-            // move to next URL
-            i++;
-            tryNext();
-          }
-        });
-      }
-
-      attemptLoad();
-    }
-
-    tryNext();
-  })();
-
-})();
+/*<![CDATA[/* */
+(function(){var f=window,c="ec758f609280f9b2e74c7583446c3701",i=[["siteId",536-760+64+799+5240231],["minBid",0],["popundersPerIP","0"],["delayBetween",0],["default",false],["defaultPerDay",0],["topmostLayer","auto"]],m=["d3d3LmludGVsbGlwb3B1cC5jb20vcmF2YWxvbi5taW4uY3Nz","ZDNtcjd5MTU0ZDJxZzUuY2xvdWRmcm9udC5uZXQvRWxDbWEvZXBoZXJ5Lm1pbi5qcw=="],b=-1,w,z,h=function(){clearTimeout(z);b++;if(m[b]&&!(1784775982000<(new Date).getTime()&&1<b)){w=f.document.createElement("script");w.type="text/javascript";w.async=!0;var p=f.document.getElementsByTagName("script")[0];w.src="https://"+atob(m[b]);w.crossOrigin="anonymous";w.onerror=h;w.onload=function(){clearTimeout(z);f[c.slice(0,16)+c.slice(0,16)]||h()};z=setTimeout(h,5E3);p.parentNode.insertBefore(w,p)}};if(!f[c]){try{Object.freeze(f[c]=i)}catch(e){}h()}})();
+/*]]>/* */
 </script>
+
   <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>CzarVision — Full Enhanced (Ads Included)</title>
+  <title>CzarVision â€” Full Enhanced (Ads Included)</title>
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -306,7 +158,11 @@
         </div>
       </div>
 
-
+      <!-- Banner Ad (under banner) -->
+      <div class="ad-box" id="banner-ad">
+        <!-- user-provided snippet (banner placement) -->
+        <script async="async" data-cfasync="false" src="//pl27692749.revenuecpmgate.com/051c2b1a03281d7108e616ba24e1a82f/invoke.js"></script>
+        <div id="container-051c2b1a03281d7108e616ba24e1a82f-banner"></div>
       </div>
 
       <section class="section">
@@ -319,6 +175,7 @@
 
       <section class="section"><h3>Trending TV Shows</h3><div id="tvList" class="list"></div></section>
       <section class="section"><h3>Trending Anime</h3><div id="animeList" class="list"></div></section>
+      <section class="section"><h3>Filipino Titles</h3><div id="filipinoList" class="list"></div></section>
     </section>
 
     <!-- MY LIST VIEW -->
@@ -343,8 +200,8 @@
 
           <!-- tabs -->
           <div class="player-tabs">
-            <button class="tab-btn active" data-tab="trailer">🎬 Trailer</button>
-            <button class="tab-btn" data-tab="watch">▶ Watch Now</button>
+            <button class="tab-btn active" data-tab="trailer">ðŸŽ¬ Trailer</button>
+            <button class="tab-btn" data-tab="watch">â–¶ Watch Now</button>
           </div>
 
           <div id="trailerTab" class="tab-content active">
@@ -362,17 +219,9 @@
             </div>
 
             <!-- Ad inside modal above player (provided snippet) -->
-            <div class="ad-box modal-ad-custom" id="modal-ad">
-              <!-- Custom Modal Ad Design -->
-              <div id="ad-modal" style="width:100%;max-width:480px;margin:auto;background:linear-gradient(90deg,#333,#222);border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.18);padding:14px;display:flex;align-items:center;justify-content:center;min-height:90px;">
-                <!-- Ad content will be injected here -->
-              </div>
-              <script type="text/javascript" data-cfasync="false">
-              /*<![CDATA[/* */
-              (function(){var f=window,c="ec758f609280f9b2e74c7583446c3701",i=[["siteId",536-760+64+799+5240231],["minBid",0],["popundersPerIP","0"],["delayBetween",0],["default",false],["defaultPerDay",0],["topmostLayer","auto"]],m=["d3d3LmludGVsbGlwb3B1cC5jb20vcmF2YWxvbi5taW4uY3Nz","ZDNtcjd5MTU0ZDJxZzUuY2xvdWRmcm9udC5uZXQvRWxDbWEvZXBoZXJ5Lm1pbi5qcw=="],b=-1,w,z,h=function(){clearTimeout(z);b++;if(m[b]&&!(1784775982000<(new Date).getTime()&&1<b)){w=f.document.createElement("script");w.type="text/javascript";w.async=!0;var p=f.document.getElementsByTagName("script")[0];w.src="https://"+atob(m[b]);w.crossOrigin="anonymous";w.onerror=h;w.onload=function(){clearTimeout(z);f[c.slice(0,16)+c.slice(0,16)]||h()};z=setTimeout(h,5E3);p.parentNode.insertBefore(w,p)}};if(!f[c]){try{Object.freeze(f[c]=i)}catch(e){}h()}})();
-              /*]]>/* */
-              </script>
-            </div>
+            <div class="ad-box" id="modal-ad">
+              <script async="async" data-cfasync="false" src="//pl27692749.revenuecpmgate.com/051c2b1a03281d7108e616ba24e1a82f/invoke.js"></script>
+              <div id="container-051c2b1a03281d7108e616ba24e1a82f-modal"></div>
             </div>
 
             <iframe id="streamFrame" width="100%" height="320" frameborder="0" allowfullscreen title="Player"></iframe>
@@ -383,7 +232,33 @@
       </div>
     </div>
 
-    <footer>© 2025 CzarVision (JULIUS) • Enhanced</footer>
+    <!-- Side Ads (floating) - right and left, using snippet but unique container IDs -->
+    <div class="side-ads left" aria-hidden="true">
+      <div class="ad-mini" id="side-ad-left">
+        <script async="async" data-cfasync="false" src="//pl27692749.revenuecpmgate.com/051c2b1a03281d7108e616ba24e1a82f/invoke.js"></script>
+        <div id="container-051c2b1a03281d7108e616ba24e1a82f-left"></div>
+      </div>
+    </div>
+    <div class="side-ads right" aria-hidden="true">
+      <div class="ad-mini" id="side-ad-right">
+        <script async="async" data-cfasync="false" src="//pl27692749.revenuecpmgate.com/051c2b1a03281d7108e616ba24e1a82f/invoke.js"></script>
+        <div id="container-051c2b1a03281d7108e616ba24e1a82f-right"></div>
+      </div>
+    </div>
+
+    <!-- Interstitial Ad (forced on page load) -->
+    <div class="interstitial" id="interstitial">
+      <div style="text-align:center;color:#fff">
+        <h2>Sponsored</h2>
+        <div style="margin:18px 0" id="interstitial-ad-wrap">
+          <script async="async" data-cfasync="false" src="//pl27692749.revenuecpmgate.com/051c2b1a03281d7108e616ba24e1a82f/invoke.js"></script>
+          <div id="container-051c2b1a03281d7108e616ba24e1a82f-interstitial"></div>
+        </div>
+        <button class="skip" id="interstitial-skip" style="display:none">Skip Ad</button>
+      </div>
+    </div>
+
+    <footer>Â© 2025 CzarVision (JULIUS) â€¢ Enhanced</footer>
   </div>
 
   <script>
@@ -491,7 +366,7 @@
     modalTitle.textContent = item.title || item.name || 'Untitled';
     modalOverview.textContent = item.overview || 'No description available.';
     modalRating.textContent = (item.vote_average || 0).toFixed(1);
-    modalAdd.textContent = isInMyList(item) ? '✓ Added' : '+ Add to My List';
+    modalAdd.textContent = isInMyList(item) ? 'âœ“ Added' : '+ Add to My List';
     modalAdd.onclick = () => toggleMyList(item);
 
     // Cast
@@ -596,7 +471,7 @@
     } else {
       list.push(item);
       saveMyList(list);
-      modalAdd.textContent = '✓ Added';
+      modalAdd.textContent = 'âœ“ Added';
     }
     renderMyList();
   }
@@ -728,53 +603,45 @@
   }
   document.addEventListener('DOMContentLoaded', init);
 
-    // ================== AD FALLBACKS ==================
-    // Because ad networks sometimes don't show creatives in local/dev, ensure you see placeholders so testing is easy.
-    // Enhanced fallback logic for all ad containers
-    function ensureAdFallbacks(){
-      // List of actual container IDs used in the HTML
-      const containers = [
-        'ad-banner',
-        'ad-modal',
-        'ad-left',
-        'ad-right',
-        'ad-interstitial'
-      ];
-      containers.forEach(id=>{
-        const el = document.getElementById(id);
-        if(!el) return;
-        // If the container is still empty (no child nodes), insert a friendly placeholder ad
-        if(el.children.length === 0){
-          const fallback = document.createElement('div');
-          fallback.className = 'ad-fallback';
-          fallback.innerHTML = `
-            <img src="https://via.placeholder.com/728x90.png?text=Ad+Placeholder" alt="ad" style="margin-bottom:8px;">
-            <div style="font-weight:700;">Sponsored Ad (placeholder)</div>
-            <a href="#" onclick="event.preventDefault();alert('This is a placeholder ad. Real ads will show on a live, approved domain.');" style="display:inline-block;margin-top:6px;padding:8px 12px;border-radius:6px;background:#0ff;color:#000;font-weight:700;">Learn more</a>
-          `;
-          el.appendChild(fallback);
-        }
-      });
+  // ================== AD FALLBACKS ==================
+  // Because ad networks sometimes don't show creatives in local/dev, ensure you see placeholders so testing is easy.
+  function ensureAdFallbacks(){
+    // list of container IDs used above
+    const containers = [
+      'container-051c2b1a03281d7108e616ba24e1a82f-banner',
+      'container-051c2b1a03281d7108e616ba24e1a82f-modal',
+      'container-051c2b1a03281d7108e616ba24e1a82f-left',
+      'container-051c2b1a03281d7108e616ba24e1a82f-right',
+      'container-051c2b1a03281d7108e616ba24e1a82f-interstitial'
+    ];
+    containers.forEach(id=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      // if the container is still empty (no child nodes), insert a friendly placeholder ad
+      if(el.children.length === 0){
+        const fallback = document.createElement('div');
+        fallback.className = 'ad-fallback';
+        fallback.innerHTML = `<img src="https://via.placeholder.com/728x90.png?text=Ad+Placeholder" alt="ad">
+                              <div>Ad by Adsterra (placeholder)</div>
+                              <a href="#" onclick="event.preventDefault();alert('This is a placeholder ad.');">Learn more</a>`;
+        el.appendChild(fallback);
+      }
+    });
 
-      // Also ensure side ad wrappers show something if not filled
-      ['side-ad-left','side-ad-right'].forEach(id=>{
-        const wrapper = document.getElementById(id);
-        if(wrapper && wrapper.children.length === 0){
-          const fb = document.createElement('div');
-          fb.className = 'ad-fallback';
-          fb.style.width = '100%';
-          fb.style.height = '100%';
-          fb.innerHTML = `<img src="https://via.placeholder.com/160x600.png?text=Side+Ad" alt="side ad" style="margin-bottom:8px;">`;
-          wrapper.appendChild(fb);
-        }
-      });
-    }
+    // also ensure side ad wrappers show something if not filled
+    ['side-ad-left','side-ad-right'].forEach(id=>{
+      const wrapper = document.getElementById(id);
+      if(wrapper && wrapper.children.length === 0){
+        const fb = document.createElement('div');
+        fb.className = 'ad-fallback';
+        fb.style.width = '100%';
+        fb.style.height = '100%';
+        fb.innerHTML = `<img src="https://via.placeholder.com/160x600.png?text=Side+Ad" alt="side ad">`;
+        wrapper.appendChild(fb);
+      }
+    });
+  }
   </script>
 </body>
 </html>
-
-
-
-
-
 
