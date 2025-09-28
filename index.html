@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="modal" id="myModal">
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <span><i class="fas fa-robot"></i> Human Simulator</span>
+        <div class="simulation-status">
+          <div class="status-item" id="scrollStatus">
+            <i class="fas fa-scroll"></i>
+            <span>Scroll</span>
+          </div>
+          <div class="status-item" id="clickStatus">
+            <i class="fas fa-mouse-pointer"></i>
+            <span>Click</span>
+          </div>
+          <div class="status-item" id="moveStatus">
+            <i class="fas fa-mouse"></i>
+            <span>Move</span>
+          </div>
+        </div>
+      </div>
+      <span class="close" onclick="closeModal()" title="Close Portal">×</span>
+    </div>
+    <div class="spinner" id="spinner"></div>
+    <div class="content-container">
+      <iframe
+        id="modalIframe"
+        src=""
+        sandbox="allow-scripts allow-same-origin allow-forms allow-downloads"
+        title="Portal Content">
+      </iframe>
+      <div class="interaction-overlay" id="interactionOverlay">
+        <div class="sim-cursor" id="simCursor"></div>
+        <div class="scroll-indicator" id="scrollIndicator">
+          <div class="scroll-thumb" id="scrollThumb"></div>
+        </div>
+        <div class="activity-log" id="activityLog"></div>
+      </div>
+      <div class="error-message" id="errorMessage">
+        <div class="error-content">
+          <h3>
+            <i class="fas fa-shield-alt"></i>
+            Site Protection Active
+          </h3>
+          <p>This website prevents embedding for security reasons.</p>
+          <div class="error-actions">
+            <button class="btn go-btn" onclick="goToSite()">
+              <i class="fas fa-external-link-alt"></i> Open Site
+            </button>
+            <button class="btn" onclick="navigate(1)">
+              <i class="fas fa-forward"></i> Next Site
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-buttons">
+      <div class="site-info" id="siteInfo">
+        <i class="fas fa-link"></i> <span id="currentSite">Loading...</span>
+        <br><small>active</small>
+      </div>
+      <button class="btn" onclick="navigate(-1)" title="Previous Site">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <button class="btn go-btn" onclick="goToSite()" title="Open in New Tab">
+        <i class="fas fa-external-link-alt"></i> Go
+      </button>
+      <button class="btn" onclick="navigate(1)" title="Next Site">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+      <button class="btn human-btn" onclick="toggleHumanSimulation()" title="Toggle Human Simulation" id="humanBtn">
+        <i class="fas fa-user" id="humanIcon"></i>
+        <span id="humanText">Human</span>
+      </button>
+    </div>
+  </div>
+  <div class="fallback" id="fallback">
+    <p><i class="fas fa-magic"></i> Advanced portal with human behavior simulation!</p>
+    <button class="show-modal-btn" onclick="reopenModal()">
+      <i class="fas fa-eye"></i> Enter Portal
+    </button>
+  </div>
+  <script src="js/script.js"></script>
+</body>
+</html>
