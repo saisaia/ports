@@ -1,1047 +1,1090 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@300;400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    :root {
-      --bg-color: #0a0a0a;
-      --text-color: #ffffff;
-      --accent-color: #00ff88;
-      --secondary-accent: #ff0088;
-      --warning-color: #ffa500;
-      --modal-bg: rgba(0, 0, 0, 0.95);
-      --border-radius: 12px;
-      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Portal</title>
+    <!-- Using a more modern, tech-themed font -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #0a0a0a;
+            --text-color: #e0e0e0;
+            --accent-color: #00ff88;
+            --secondary-accent: #ff00c8;
+            --warning-color: #ffa500;
+            --modal-bg: rgba(10, 10, 20, 0.98);
+            --ui-bg: rgba(26, 26, 46, 0.9);
+            --border-color: rgba(0, 255, 136, 0.3);
+            --border-radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    body {
-      font-family: 'Orbitron', monospace;
-      background: linear-gradient(135deg, var(--bg-color) 0%, #1a1a2e 50%, #16213e 100%);
-      color: var(--text-color);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      position: relative;
-    }
+        html {
+            font-size: 16px;
+        }
 
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle at 20% 20%, rgba(0, 255, 136, 0.1), transparent 50%),
-                  radial-gradient(circle at 80% 80%, rgba(255, 0, 136, 0.1), transparent 50%);
-      pointer-events: none;
-      animation: pulse 4s ease-in-out infinite alternate;
-    }
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background: linear-gradient(135deg, var(--bg-color) 0%, #1a1a2e 50%, #16213e 100%);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
 
-    @keyframes pulse {
-      0% { opacity: 0.5; }
-      100% { opacity: 1; }
-    }
+        /* Animated background gradient */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 20%, rgba(0, 255, 136, 0.08), transparent 40%),
+                        radial-gradient(circle at 80% 80%, rgba(255, 0, 200, 0.08), transparent 40%);
+            pointer-events: none;
+            animation: pulse 8s ease-in-out infinite alternate;
+        }
 
-    /* Modal Styles - Full Screen */
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: var(--modal-bg);
-      display: none;
-      z-index: 1000;
-      animation: zoomIn 0.5s ease forwards;
-    }
+        @keyframes pulse {
+            0% { opacity: 0.6; transform: scale(1); }
+            100% { opacity: 1; transform: scale(1.02); }
+        }
+        
+        /* --- Main Modal --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: var(--modal-bg);
+            display: none;
+            flex-direction: column;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        .modal.show { display: flex; }
 
-    .modal.show {
-      display: flex;
-      flex-direction: column;
-    }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
 
-    @keyframes zoomIn {
-      from {
-        opacity: 0;
-        transform: scale(0.8);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
+        /* --- Modal Header --- */
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            background: var(--ui-bg);
+            border-bottom: 2px solid var(--border-color);
+            font-size: 1.1rem;
+            color: var(--accent-color);
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+            flex-shrink: 0;
+        }
 
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem 2rem;
-      background: linear-gradient(135deg, rgba(26, 26, 46, 0.9), rgba(22, 33, 62, 0.9));
-      border-bottom: 2px solid var(--accent-color);
-      font-size: 1.2rem;
-      color: var(--accent-color);
-      font-weight: 700;
-      text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
-      position: relative;
-      overflow: hidden;
-    }
+        .simulation-status {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.8rem;
+        }
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid transparent;
+            transition: var(--transition);
+        }
+        .status-item.active {
+            border-color: var(--accent-color);
+            background: rgba(0, 255, 136, 0.1);
+            transform: scale(1.05);
+        }
+        .status-item.active i { animation: statusBlink 1.5s ease-in-out infinite; }
+        @keyframes statusBlink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.4; }
+        }
+        
+        /* --- Content Area --- */
+        .content-container {
+            flex-grow: 1;
+            position: relative;
+            display: flex;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 255, 136, 0.1);
+            border-top: 4px solid var(--accent-color);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 0.8s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            display: none;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-    .modal-header::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: conic-gradient(var(--accent-color), var(--secondary-accent), var(--accent-color));
-      opacity: 0.05;
-      animation: rotate 15s linear infinite;
-      z-index: -1;
-    }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #fff;
+            transition: opacity 0.5s ease, filter 0.5s ease;
+        }
+        iframe.loading {
+            opacity: 0.5;
+            filter: blur(4px);
+        }
 
-    @keyframes rotate {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
+        /* --- Interaction Simulation Overlay --- */
+        .interaction-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+            overflow: hidden;
+        }
+        .sim-cursor {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            box-shadow: 0 0 15px var(--accent-color);
+            transition: all 1s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s;
+        }
+        .sim-cursor.active { opacity: 0.8; }
+        .sim-cursor.clicking {
+            transform: translate(-50%, -50%) scale(0.7);
+            background: var(--secondary-accent);
+            box-shadow: 0 0 20px var(--secondary-accent);
+            transition-duration: 0.1s;
+        }
 
-    .close {
-      cursor: pointer;
-      font-size: 2rem;
-      color: var(--accent-color);
-      transition: var(--transition);
-      padding: 0.5rem;
-      border-radius: 50%;
-      width: 3rem;
-      height: 3rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+        .activity-log {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem;
+            max-width: 320px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: var(--transition);
+            font-size: 0.8rem;
+            backdrop-filter: blur(5px);
+        }
+        .activity-log.show { opacity: 1; transform: translateY(0); }
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.2rem 0;
+            color: var(--accent-color);
+        }
+        .activity-item i { width: 1.2em; text-align: center; }
 
-    .close:hover {
-      color: var(--secondary-accent);
-      background: rgba(255, 0, 136, 0.1);
-      transform: rotate(90deg);
-    }
+        /* --- Error Message --- */
+        .error-message {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            height: 100%;
+            width: 100%;
+            position: absolute;
+        }
+        .error-content h3 {
+            color: var(--secondary-accent);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .error-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
 
-    .simulation-status {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      font-size: 0.9rem;
-    }
+        /* --- Navigation Controls --- */
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--ui-bg);
+            border-top: 2px solid var(--border-color);
+            position: relative;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
 
-    .status-item {
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      padding: 0.3rem 0.6rem;
-      border-radius: 15px;
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
+        .site-info {
+            position: absolute;
+            left: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.9rem;
+            opacity: 0.7;
+            max-width: 200px;
+        }
+        #currentSite { 
+            font-weight: bold;
+            color: var(--text-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-    .status-item.active {
-      border-color: var(--accent-color);
-      background: rgba(0, 255, 136, 0.1);
-    }
+        /* --- Buttons --- */
+        .btn {
+            background: linear-gradient(45deg, rgba(0, 255, 136, 0.1), rgba(0, 255, 136, 0.3));
+            border: 2px solid var(--border-color);
+            color: var(--text-color);
+            padding: 0.6rem 0.8rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+        .btn i { transition: transform 0.3s; }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
+            border-color: var(--accent-color);
+        }
+        .btn:active { transform: translateY(0); }
+        .btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+            transform: none;
+            box-shadow: none;
+        }
+        .btn:hover i { transform: scale(1.1); }
+        .go-btn {
+            background: linear-gradient(45deg, rgba(255, 0, 200, 0.2), rgba(255, 0, 200, 0.4));
+            border-color: var(--secondary-accent);
+        }
+        .go-btn:hover { box-shadow: 0 8px 25px rgba(255, 0, 200, 0.4); }
+        
+        .human-btn.active {
+            background: linear-gradient(45deg, rgba(255, 165, 0, 0.4), rgba(255, 165, 0, 0.6));
+            border-color: var(--warning-color);
+            box-shadow: 0 0 15px rgba(255, 165, 0, 0.6);
+        }
 
-    .status-item.active i {
-      animation: statusBlink 1.5s ease-in-out infinite;
-    }
+        /* Auto-navigation progress bar */
+        #navProgressBar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background-color: var(--accent-color);
+            width: 0;
+            box-shadow: 0 0 10px var(--accent-color);
+        }
+        
+        /* --- Fallback Screen --- */
+        .fallback {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: rgba(26, 26, 46, 0.5);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            max-width: 500px;
+        }
+        .fallback p { margin-bottom: 2rem; font-size: 1.2rem; }
+        .show-modal-btn {
+            background: linear-gradient(45deg, var(--accent-color), var(--secondary-accent));
+            border: none;
+            color: var(--bg-color);
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius);
+            font-family: 'Roboto Mono', monospace;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 1.1rem;
+        }
+        .show-modal-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 35px rgba(0, 255, 136, 0.4);
+        }
+        
+        /* --- Settings Panel --- */
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            max-width: 100%;
+            height: 100%;
+            background: var(--modal-bg);
+            border-left: 2px solid var(--border-color);
+            z-index: 1100;
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+        }
+        .settings-panel.open { right: 0; }
+        .settings-panel h3 {
+            color: var(--accent-color);
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; opacity: 0.8; }
+        .form-group input[type="url"], .form-group input[type="number"] {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-color);
+            font-family: 'Roboto Mono', monospace;
+        }
+        #linkList {
+            list-style: none;
+            max-height: 250px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 0.5rem;
+        }
+        #linkList li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            word-break: break-all;
+        }
+        #linkList li:hover { background: rgba(255,255,255,0.05); }
+        .delete-link-btn {
+            background: none;
+            border: none;
+            color: var(--secondary-accent);
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+        
+        /* --- Toast Notifications --- */
+        #toastContainer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            background: var(--ui-bg);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-color);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            animation: slideIn 0.3s ease forwards, fadeOut 0.3s ease 4.7s forwards;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .toast.error { border-left-color: var(--secondary-accent); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; transform: translateX(10%); } }
 
-    @keyframes statusBlink {
-      0%, 50% { opacity: 1; }
-      51%, 100% { opacity: 0.3; }
-    }
-
-    /* Enhanced Spinner */
-    .spinner {
-      border: 4px solid rgba(0, 255, 136, 0.1);
-      border-top: 4px solid var(--accent-color);
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      animation: spin 0.8s linear infinite;
-      margin: 2rem auto;
-      display: none;
-      box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* Content container for iframe and overlays */
-    .content-container {
-      flex: 1;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* Enhanced iframe */
-    iframe {
-      width: 100%;
-      flex: 1;
-      border: none;
-      background: #fff;
-      transition: var(--transition);
-    }
-
-    iframe.loading {
-      opacity: 0.7;
-      filter: blur(2px);
-    }
-
-    /* Interaction overlay for visual effects */
-    .interaction-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 5;
-    }
-
-    /* Simulated cursor */
-    .sim-cursor {
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      background: var(--accent-color);
-      border-radius: 50%;
-      transform: translate(-10px, -10px);
-      opacity: 0;
-      box-shadow: 0 0 10px var(--accent-color);
-      z-index: 10;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.6, 1);
-    }
-
-    .sim-cursor.active {
-      opacity: 0.8;
-    }
-
-    .sim-cursor.clicking {
-      transform: translate(-10px, -10px) scale(0.7);
-      background: var(--secondary-accent);
-      box-shadow: 0 0 15px var(--secondary-accent);
-    }
-
-    /* Scroll indicator */
-    .scroll-indicator {
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 30px;
-      height: 100px;
-      background: rgba(0, 255, 136, 0.1);
-      border: 2px solid var(--accent-color);
-      border-radius: 15px;
-      opacity: 0;
-      transition: var(--transition);
-    }
-
-    .scroll-indicator.active {
-      opacity: 1;
-    }
-
-    .scroll-thumb {
-      width: 100%;
-      height: 20px;
-      background: var(--accent-color);
-      border-radius: 10px;
-      transition: all 0.5s ease;
-    }
-
-    /* Activity log */
-    .activity-log {
-      position: absolute;
-      bottom: 10px;
-      left: 10px;
-      background: rgba(0, 0, 0, 0.8);
-      border: 1px solid var(--accent-color);
-      border-radius: 8px;
-      padding: 0.5rem;
-      max-width: 300px;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: var(--transition);
-      font-size: 0.8rem;
-    }
-
-    .activity-log.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .activity-item {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin: 0.2rem 0;
-      color: var(--accent-color);
-    }
-
-    /* Error message styling */
-    .error-message {
-      display: none;
-      flex: 1;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 2rem;
-      background: linear-gradient(135deg, rgba(26, 26, 46, 0.8), rgba(22, 33, 62, 0.8));
-    }
-
-    .error-content {
-      max-width: 500px;
-    }
-
-    .error-content h3 {
-      color: var(--secondary-accent);
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-    }
-
-    .error-content p {
-      color: var(--text-color);
-      opacity: 0.8;
-      margin-bottom: 1.5rem;
-      line-height: 1.6;
-    }
-
-    .error-actions {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    /* Enhanced Navigation Controls */
-    .nav-buttons {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 1rem 2rem;
-      background: linear-gradient(135deg, rgba(26, 26, 46, 0.9), rgba(22, 33, 62, 0.9));
-      border-top: 2px solid var(--accent-color);
-      position: relative;
-      flex-wrap: wrap;
-    }
-
-    .nav-buttons::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.05), transparent);
-      animation: scan 3s ease-in-out infinite;
-    }
-
-    @keyframes scan {
-      0%, 100% { transform: translateX(-100%); }
-      50% { transform: translateX(100%); }
-    }
-
-    .btn {
-      background: linear-gradient(45deg, rgba(0, 255, 136, 0.1), rgba(0, 255, 136, 0.3));
-      border: 2px solid var(--accent-color);
-      color: var(--text-color);
-      padding: 0.6rem 0.8rem;
-      border-radius: var(--border-radius);
-      cursor: pointer;
-      font-family: 'Orbitron', monospace;
-      font-size: 0.85rem;
-      font-weight: 400;
-      transition: var(--transition);
-      position: relative;
-      overflow: hidden;
-      min-width: 50px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.4rem;
-      text-decoration: none;
-    }
-
-    .btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: var(--transition);
-    }
-
-    .btn:hover::before {
-      left: 100%;
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(0, 255, 136, 0.4);
-      border-color: var(--secondary-accent);
-    }
-
-    .btn:active {
-      transform: translateY(0);
-    }
-
-    .go-btn {
-      background: linear-gradient(45deg, rgba(255, 0, 136, 0.2), rgba(255, 0, 136, 0.4));
-      border-color: var(--secondary-accent);
-      font-weight: 700;
-    }
-
-    .go-btn:hover {
-      box-shadow: 0 8px 25px rgba(255, 0, 136, 0.4);
-    }
-
-    .human-btn {
-      background: linear-gradient(45deg, rgba(255, 165, 0, 0.2), rgba(255, 165, 0, 0.4));
-      border-color: var(--warning-color);
-    }
-
-    .human-btn:hover {
-      box-shadow: 0 8px 25px rgba(255, 165, 0, 0.4);
-    }
-
-    .human-btn.active {
-      background: linear-gradient(45deg, rgba(255, 165, 0, 0.4), rgba(255, 165, 0, 0.6));
-      box-shadow: 0 0 15px rgba(255, 165, 0, 0.6);
-    }
-
-    /* Site Info Display */
-    .site-info {
-      position: absolute;
-      top: 50%;
-      left: 1rem;
-      transform: translateY(-50%);
-      background: rgba(0, 0, 0, 0.8);
-      padding: 0.5rem 1rem;
-      border-radius: var(--border-radius);
-      border: 1px solid var(--accent-color);
-      font-size: 0.8rem;
-      opacity: 0;
-      transition: var(--transition);
-      max-width: 200px;
-      word-break: break-word;
-    }
-
-    .nav-buttons:hover .site-info {
-      opacity: 1;
-    }
-
-    /* Fallback Styles */
-    .fallback {
-      text-align: center;
-      padding: 3rem 2rem;
-      background: rgba(26, 26, 46, 0.5);
-      border-radius: var(--border-radius);
-      border: 1px solid rgba(0, 255, 136, 0.3);
-      backdrop-filter: blur(10px);
-      max-width: 500px;
-      margin: 1rem;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .fallback p {
-      margin-bottom: 2rem;
-      font-size: 1.2rem;
-      opacity: 0.9;
-      animation: fadeIn 1s ease forwards;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .show-modal-btn {
-      background: linear-gradient(45deg, var(--accent-color), var(--secondary-accent));
-      border: none;
-      color: var(--bg-color);
-      padding: 1rem 2rem;
-      border-radius: var(--border-radius);
-      font-family: 'Orbitron', monospace;
-      font-weight: 700;
-      cursor: pointer;
-      transition: var(--transition);
-      font-size: 1.1rem;
-    }
-
-    .show-modal-btn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 15px 35px rgba(0, 255, 136, 0.4);
-    }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
-      .modal-header {
-        padding: 0.75rem 1rem;
-        font-size: 1rem;
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-
-      .simulation-status {
-        font-size: 0.8rem;
-        gap: 0.5rem;
-      }
-
-      .nav-buttons {
-        padding: 0.75rem 1rem;
-        gap: 0.5rem;
-      }
-
-      .btn {
-        padding: 0.5rem 0.6rem;
-        font-size: 0.75rem;
-        min-width: 40px;
-      }
-
-      .site-info {
-        display: none;
-      }
-    }
-  </style>
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .modal-header, .nav-buttons { padding: 0.75rem 1rem; }
+            .modal-header { flex-direction: column; gap: 0.5rem; }
+            .site-info { position: static; transform: none; text-align: center; width: 100%; margin-bottom: 0.5rem; }
+        }
+    </style>
 </head>
 
 <body>
-  <div class="modal" id="myModal">
-    <div class="modal-header">
-      <div style="display: flex; align-items: center; gap: 1rem;">
-        <span><i class="fas fa-robot"></i> Human Simulator</span>
-        <div class="simulation-status">
-          <div class="status-item" id="scrollStatus">
-            <i class="fas fa-scroll"></i>
-            <span>Scroll</span>
-          </div>
-          <div class="status-item" id="clickStatus">
-            <i class="fas fa-mouse-pointer"></i>
-            <span>Click</span>
-          </div>
-          <div class="status-item" id="moveStatus">
-            <i class="fas fa-mouse"></i>
-            <span>Move</span>
-          </div>
+    <!-- Main Modal Container -->
+    <div class="modal" id="myModal">
+        <div class="modal-header">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <span><i class="fas fa-robot"></i> Human Simulator</span>
+                <div class="simulation-status">
+                    <div class="status-item" id="scrollStatus"><i class="fas fa-scroll"></i><span>Scroll</span></div>
+                    <div class="status-item" id="clickStatus"><i class="fas fa-mouse-pointer"></i><span>Click</span></div>
+                    <div class="status-item" id="moveStatus"><i class="fas fa-mouse"></i><span>Move</span></div>
+                </div>
+            </div>
+            <div>
+                 <button class="btn" id="settingsBtn" title="Settings"><i class="fas fa-cog"></i></button>
+                 <button class="btn go-btn" id="closeBtn" title="Close Portal"><i class="fas fa-times"></i></button>
+            </div>
         </div>
-      </div>
-      <span class="close" onclick="closeModal()" title="Close Portal">×</span>
-    </div>
-    <div class="spinner" id="spinner"></div>
-
-    <div class="content-container">
-      <iframe
-        id="modalIframe"
-        src=""
-        sandbox="allow-scripts allow-same-origin allow-forms allow-downloads"
-        title="Portal Content">
-      </iframe>
-
-      <div class="interaction-overlay" id="interactionOverlay">
-        <div class="sim-cursor" id="simCursor"></div>
-        <div class="scroll-indicator" id="scrollIndicator">
-          <div class="scroll-thumb" id="scrollThumb"></div>
+        
+        <div class="content-container">
+            <div class="spinner" id="spinner"></div>
+            <iframe id="modalIframe" src="" sandbox="allow-scripts allow-same-origin allow-forms allow-downloads" title="Portal Content"></iframe>
+            <div class="interaction-overlay">
+                <div class="sim-cursor" id="simCursor"></div>
+                <div class="activity-log" id="activityLog"></div>
+            </div>
+            <div class="error-message" id="errorMessage">
+                <div class="error-content">
+                    <h3><i class="fas fa-shield-alt"></i> Site Protection Active</h3>
+                    <p>This website prevents embedding for security reasons or failed to load.</p>
+                    <div class="error-actions">
+                        <button class="btn go-btn" id="errorGoToSiteBtn"><i class="fas fa-external-link-alt"></i> Open Site</button>
+                        <button class="btn" id="errorNextBtn"><i class="fas fa-forward"></i> Next Site</button>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="activity-log" id="activityLog"></div>
-      </div>
 
-      <div class="error-message" id="errorMessage">
-        <div class="error-content">
-          <h3>
-            <i class="fas fa-shield-alt"></i>
-            Site Protection Active
-          </h3>
-          <p>This website prevents embedding for security reasons.</p>
-          <div class="error-actions">
-            <button class="btn go-btn" onclick="goToSite()">
-              <i class="fas fa-external-link-alt"></i> Open Site
-            </button>
-            <button class="btn" onclick="navigate(1)">
-              <i class="fas fa-forward"></i> Next Site
-            </button>
-          </div>
+        <div class="nav-buttons">
+            <div id="navProgressBar"></div>
+            <div class="site-info"><i class="fas fa-link"></i> <span id="currentSite">Loading...</span></div>
+            <button class="btn" id="prevBtn" title="Previous Site (ArrowLeft)"><i class="fas fa-chevron-left"></i></button>
+            <button class="btn go-btn" id="goToSiteBtn" title="Open in New Tab (Enter)"><i class="fas fa-external-link-alt"></i> Go</button>
+            <button class="btn" id="nextBtn" title="Next Site (ArrowRight)"><i class="fas fa-chevron-right"></i></button>
+            <button class="btn human-btn" id="humanBtn" title="Toggle Human Simulation (H)"><i class="fas fa-user" id="humanIcon"></i><span id="humanText">Human</span></button>
         </div>
-      </div>
     </div>
 
-    <div class="nav-buttons">
-      <div class="site-info" id="siteInfo">
-        <i class="fas fa-link"></i> <span id="currentSite">Loading...</span>
-        <br><small>active</small>
-      </div>
-      <button class="btn" onclick="navigate(-1)" title="Previous Site">
-        <i class="fas fa-chevron-left"></i>
-      </button>
-      <button class="btn go-btn" onclick="goToSite()" title="Open in New Tab">
-        <i class="fas fa-external-link-alt"></i> Go
-      </button>
-      <button class="btn" onclick="navigate(1)" title="Next Site">
-        <i class="fas fa-chevron-right"></i>
-      </button>
-      <button class="btn human-btn" onclick="toggleHumanSimulation()" title="Toggle Human Simulation" id="humanBtn">
-        <i class="fas fa-user" id="humanIcon"></i>
-        <span id="humanText">Human</span>
-      </button>
+    <!-- Fallback Screen -->
+    <div class="fallback" id="fallback">
+        <p><i class="fas fa-magic"></i> Advanced portal with human behavior simulation!</p>
+        <button class="show-modal-btn" id="reopenModalBtn"><i class="fas fa-eye"></i> Enter Portal</button>
     </div>
-  </div>
 
-  <div class="fallback" id="fallback">
-    <p><i class="fas fa-magic"></i> Advanced portal with human behavior simulation!</p>
-    <button class="show-modal-btn" onclick="reopenModal()">
-      <i class="fas fa-eye"></i> Enter Portal
-    </button>
-  </div>
+    <!-- Settings Panel -->
+    <div class="settings-panel" id="settingsPanel">
+        <h3><i class="fas fa-cogs"></i> Portal Settings</h3>
+        <div class="form-group">
+            <label for="autoNavInterval">Auto-Navigate Delay (seconds)</label>
+            <input type="number" id="autoNavInterval" min="10" max="300" step="5">
+        </div>
+        
+        <h3><i class="fas fa-list"></i> Link Management</h3>
+        <div class="form-group">
+             <label for="newLinkInput">Add New URL</label>
+             <input type="url" id="newLinkInput" placeholder="https://example.com">
+             <button class="btn go-btn" id="addLinkBtn" style="width: 100%; margin-top: 0.5rem;">Add Link</button>
+        </div>
+        <ul id="linkList"></ul>
+        <button class="btn" id="closeSettingsBtn" style="margin-top: auto;">Close Settings</button>
+    </div>
 
-  <script>
-    let links = [
-      'https://www.revenuecpmgate.com/m9u1han8?key=46269a8607048e5a3a5681aeca96ce22',
-      'https://www.revenuecpmgate.com/wssnwv2pmz?key=959022a0974bc8ddd427a1ec9c2049b1'
-    ];
+    <!-- Toast Notification Container -->
+    <div id="toastContainer"></div>
 
-    let currentIndex = 0;
-    let autoNavigateInterval;
-    let isLoading = false;
-    let humanSimulationEnabled = true;
-    let simulationInterval;
-    let activityTimeout;
+    <!-- --- START: Added new ad scripts (1 and 2) requested by user --- -->
+    <!-- Ad Tag 1: Popunder/Redirect (Added 'async defer' for smooth, non-blocking loading) -->
+    <script type="text/javascript" src="https://www.revenuecpmgate.com/n3a4mbwqv?key=4b23dfc27f908fb5aa3fb1c61634d099" async defer></script>
+    <!-- Ad Tag 2: Popunder/Redirect (Added 'async defer' for smooth, non-blocking loading) -->
+    <script type="text/javascript" src="https://www.revenuecpmgate.com/wssnwv2pmz?key=959022a0974bc8ddd427a1ec9c2049b1" async defer></script>
+    <!-- --- END: Added new ad scripts --- -->
 
-    let scrollPosition = 0;
-    let lastActivity = Date.now();
-    let activities = [];
+    <!-- Ad Tag 3: The original 3rd-party ad script provided by the user (already present) -->
+    <script type="text/javascript" data-cfasync="false">
+    /*<![CDATA[/* */
+    (function(){var n=window,a="ec758f609280f9b2e74c7583446c3701",b=[["siteId",112*859*56*995+858-5355469748],["minBid",0],["popundersPerIP","0"],["delayBetween",0],["default",false],["defaultPerDay",0],["topmostLayer","auto"]],q=["d3d3LmludGVsbGlwb3B1cHVwLmNvbS9GdlpqSkVJL20vZG11bHRpLm1pbi5qcw==","ZDNtcjd5MTU0ZDJxZzUuY2xvdWRmcm9udC5uZXQvZ21hdGVyaWFsLWtpdC5taW4uanM="],x=-1,y,d,s=function(){clearTimeout(d);x++;if(q[x]&&!(1785033390000<(new Date).getTime()&&1<x)){y=n.document.createElement("script");y.type="text/javascript";y.async=!0;var e=n.document.getElementsByTagName("script")[0];y.src="https://"+atob(q[x]);y.crossOrigin="anonymous";y.onerror=s;y.onload=function(){clearTimeout(d);n[a.slice(0,16)+a.slice(0,16)]||s()};d=setTimeout(s,5E3);e.parentNode.insertBefore(y,e)}};if(!n[a]){try{Object.freeze(n[a]=b)}catch(e){}s()}})();
+    /*]]>/* */
+    </script>
 
-    function shuffleArray(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-    }
+<script>
+// Encapsulate the entire application in an IIFE to avoid polluting the global scope
+(function() {
+    'use strict';
 
-    function updateSiteInfo() {
-      const siteInfo = document.getElementById('currentSite');
-      const currentSite = links[currentIndex];
-      try {
-        const url = new URL(currentSite);
-        siteInfo.textContent = url.hostname;
-      } catch {
-        siteInfo.textContent = currentSite;
-      }
-    }
-
-    function logActivity(type, description) {
-      activities.unshift({
-        type: type,
-        description: description,
-        timestamp: Date.now()
-      });
-
-      // Keep only last 5 activities
-      if (activities.length > 5) {
-        activities = activities.slice(0, 5);
-      }
-
-      updateActivityLog();
-    }
-
-    function updateActivityLog() {
-      const activityLog = document.getElementById('activityLog');
-      const now = Date.now();
-
-      activityLog.innerHTML = activities.map(activity => {
-        const timeAgo = Math.floor((now - activity.timestamp) / 1000);
-        return `<div class="activity-item">
-          <i class="fas fa-${getActivityIcon(activity.type)}"></i>
-          <span>${activity.description} (${timeAgo}s ago)</span>
-        </div>`;
-      }).join('');
-
-      if (activities.length > 0) {
-        activityLog.classList.add('show');
-        clearTimeout(activityTimeout);
-        activityTimeout = setTimeout(() => {
-          activityLog.classList.remove('show');
-        }, 5000);
-      }
-    }
-
-    function getActivityIcon(type) {
-      const icons = {
-        scroll: 'scroll',
-        click: 'mouse-pointer',
-        move: 'mouse',
-        hover: 'hand-pointer',
-        rightclick: 'context-menu'
-      };
-      return icons[type] || 'circle';
-    }
-
-    function simulateScrolling() {
-      if (!humanSimulationEnabled) return;
-
-      const scrollIndicator = document.getElementById('scrollIndicator');
-      const scrollThumb = document.getElementById('scrollThumb');
-      const scrollStatus = document.getElementById('scrollStatus');
-
-      scrollIndicator.classList.add('active');
-      scrollStatus.classList.add('active');
-
-      // Simulate natural scrolling pattern
-      const scrollAmount = Math.random() * 80 + 10; // 10-90%
-      scrollPosition = Math.min(scrollPosition + scrollAmount, 100);
-
-      if (scrollPosition >= 90) {
-        scrollPosition = 0; // Reset to top
-      }
-
-      scrollThumb.style.transform = `translateY(${scrollPosition * 0.8}px)`;
-
-      logActivity('scroll', `Scrolled to ${Math.floor(scrollPosition)}%`);
-
-      setTimeout(() => {
-        scrollIndicator.classList.remove('active');
-        scrollStatus.classList.remove('active');
-      }, 2000);
-    }
-
-    function simulateMouseMovement() {
-      if (!humanSimulationEnabled) return;
-
-      const cursor = document.getElementById('simCursor');
-      const moveStatus = document.getElementById('moveStatus');
-      const overlay = document.getElementById('interactionOverlay');
-
-      // Get random position within iframe area
-      const rect = overlay.getBoundingClientRect();
-      const x = Math.random() * (rect.width - 40) + 20;
-      const y = Math.random() * (rect.height - 40) + 20;
-
-      cursor.classList.add('active');
-      moveStatus.classList.add('active');
-      cursor.style.left = x + 'px';
-      cursor.style.top = y + 'px';
-
-      logActivity('move', `Mouse moved to (${Math.floor(x)}, ${Math.floor(y)})`);
-
-      setTimeout(() => {
-        cursor.classList.remove('active');
-        moveStatus.classList.remove('active');
-      }, 3000);
-    }
-
-    function simulateClick() {
-      if (!humanSimulationEnabled) return;
-
-      const cursor = document.getElementById('simCursor');
-      const clickStatus = document.getElementById('clickStatus');
-
-      // First move cursor to click position
-      simulateMouseMovement();
-
-      setTimeout(() => {
-        cursor.classList.add('clicking');
-        clickStatus.classList.add('active');
-
-        logActivity('click', 'Left clicked at cursor position');
-
-        setTimeout(() => {
-          cursor.classList.remove('clicking');
-          clickStatus.classList.remove('active');
-        }, 500);
-      }, 1000);
-    }
-
-    function simulateRightClick() {
-      if (!humanSimulationEnabled) return;
-
-      simulateMouseMovement();
-
-      setTimeout(() => {
-        const cursor = document.getElementById('simCursor');
-        cursor.style.background = 'var(--warning-color)';
-        cursor.style.boxShadow = '0 0 15px var(--warning-color)';
-
-        logActivity('rightclick', 'Right clicked (context menu)');
-
-        setTimeout(() => {
-          cursor.style.background = 'var(--accent-color)';
-          cursor.style.boxShadow = '0 0 10px var(--accent-color)';
-        }, 1000);
-      }, 1000);
-    }
-
-    function simulateHumanBehavior() {
-      if (!humanSimulationEnabled) return;
-
-      const actions = [
-        { action: simulateScrolling, weight: 40 },
-        { action: simulateMouseMovement, weight: 30 },
-        { action: simulateClick, weight: 20 },
-        { action: simulateRightClick, weight: 10 }
-      ];
-
-      // Weighted random selection
-      const totalWeight = actions.reduce((sum, item) => sum + item.weight, 0);
-      let random = Math.random() * totalWeight;
-
-      for (const item of actions) {
-        if (random < item.weight) {
-          item.action();
-          break;
+    // --- STATE MANAGEMENT ---
+    const state = {
+        links: [],
+        currentIndex: 0,
+        isLoading: false,
+        humanSimulationEnabled: true,
+        timers: {
+            autoNavigate: null,
+            simulation: null,
+            activityLog: null,
+            loadingTimeout: null,
+        },
+        settings: {
+            autoNavInterval: 45 // in seconds
         }
-        random -= item.weight;
-      }
+    };
+
+    // --- DOM ELEMENT CACHE ---
+    const dom = {
+        modal: document.getElementById('myModal'),
+        fallback: document.getElementById('fallback'),
+        iframe: document.getElementById('modalIframe'),
+        spinner: document.getElementById('spinner'),
+        currentSite: document.getElementById('currentSite'),
+        errorMessage: document.getElementById('errorMessage'),
+        humanBtn: document.getElementById('humanBtn'),
+        humanIcon: document.getElementById('humanIcon'),
+        humanText: document.getElementById('humanText'),
+        navProgressBar: document.getElementById('navProgressBar'),
+        simCursor: document.getElementById('simCursor'),
+        activityLog: document.getElementById('activityLog'),
+        statusItems: {
+            scroll: document.getElementById('scrollStatus'),
+            click: document.getElementById('clickStatus'),
+            move: document.getElementById('moveStatus')
+        },
+        settingsPanel: document.getElementById('settingsPanel'),
+        linkList: document.getElementById('linkList'),
+        newLinkInput: document.getElementById('newLinkInput'),
+        autoNavIntervalInput: document.getElementById('autoNavInterval'),
+        toastContainer: document.getElementById('toastContainer'),
+    };
+
+    // --- CORE FUNCTIONS ---
+
+    /**
+     * Initializes the application, loads state, and binds event listeners.
+     */
+    function init() {
+        loadState();
+        bindEventListeners();
+        
+        if (state.links.length > 0) {
+            shuffleArray(state.links);
+            showLink(state.currentIndex);
+        } else {
+            showToast("No links found. Add links in the settings panel.", "error");
+            openSettingsPanel();
+            dom.modal.classList.add('show'); // Show modal even if no links
+        }
+        // Set initial human simulation button state
+        dom.humanBtn.classList.toggle('active', state.humanSimulationEnabled);
+        dom.humanIcon.className = state.humanSimulationEnabled ? 'fas fa-user' : 'fas fa-user-slash';
+        dom.humanText.textContent = state.humanSimulationEnabled ? 'Human' : 'Manual';
     }
 
-    function startHumanSimulation() {
-      if (simulationInterval) {
-        clearInterval(simulationInterval);
-      }
+    /**
+     * Caches references to all necessary DOM elements.
+     */
+    function bindEventListeners() {
+        // Main controls
+        document.getElementById('reopenModalBtn').addEventListener('click', reopenModal);
+        document.getElementById('closeBtn').addEventListener('click', closeModal);
+        document.getElementById('prevBtn').addEventListener('click', () => navigate(-1));
+        document.getElementById('nextBtn').addEventListener('click', () => navigate(1));
+        document.getElementById('goToSiteBtn').addEventListener('click', goToSite);
+        document.getElementById('humanBtn').addEventListener('click', toggleHumanSimulation);
+        
+        // Error message controls
+        document.getElementById('errorGoToSiteBtn').addEventListener('click', goToSite);
+        document.getElementById('errorNextBtn').addEventListener('click', () => navigate(1));
+        
+        // Settings panel
+        document.getElementById('settingsBtn').addEventListener('click', openSettingsPanel);
+        document.getElementById('closeSettingsBtn').addEventListener('click', closeSettingsPanel);
+        document.getElementById('addLinkBtn').addEventListener('click', addLink);
+        dom.newLinkInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addLink();
+        });
+        dom.linkList.addEventListener('click', handleLinkListClick);
+        dom.autoNavIntervalInput.addEventListener('change', updateSettings);
 
-      simulationInterval = setInterval(() => {
-        simulateHumanBehavior();
-      }, Math.random() * 8000 + 3000); // 3-11 seconds
+        // Keyboard navigation
+        document.addEventListener('keydown', handleKeyPress);
+    }
+    
+    /**
+     * Loads links and settings from localStorage.
+     */
+    function loadState() {
+        const savedLinks = localStorage.getItem('portalLinks');
+        const savedSettings = localStorage.getItem('portalSettings');
+        
+        state.links = savedLinks ? JSON.parse(savedLinks) : [
+            'https://www.youtube.com/',
+            'https://www.google.com/',
+            'https://www.reddit.com/r/all/'
+        ];
+        
+        if (savedSettings) {
+            try {
+                const parsedSettings = JSON.parse(savedSettings);
+                state.settings = { ...state.settings, ...parsedSettings };
+            } catch (e) {
+                console.error("Failed to parse settings:", e);
+            }
+        }
+        
+        dom.autoNavIntervalInput.value = state.settings.autoNavInterval;
+        renderLinkList();
+    }
+    
+    /**
+     * Saves the current links and settings to localStorage.
+     */
+    function saveState() {
+        localStorage.setItem('portalLinks', JSON.stringify(state.links));
+        localStorage.setItem('portalSettings', JSON.stringify(state.settings));
+        showToast("Settings and links saved!", "success");
     }
 
-    function stopHumanSimulation() {
-      if (simulationInterval) {
-        clearInterval(simulationInterval);
-        simulationInterval = null;
-      }
+    // --- NAVIGATION LOGIC ---
 
-      // Hide all simulation elements
-      document.getElementById('simCursor').classList.remove('active');
-      document.getElementById('scrollIndicator').classList.remove('active');
-      document.getElementById('activityLog').classList.remove('show');
-
-      // Reset status indicators
-      document.querySelectorAll('.status-item').forEach(item => {
-        item.classList.remove('active');
-      });
-    }
-
-    function toggleHumanSimulation() {
-      humanSimulationEnabled = !humanSimulationEnabled;
-      const btn = document.getElementById('humanBtn');
-      const icon = document.getElementById('humanIcon');
-      const text = document.getElementById('humanText');
-
-      if (humanSimulationEnabled) {
-        btn.classList.add('active');
-        icon.className = 'fas fa-user';
-        text.textContent = 'Human';
-        startHumanSimulation();
-        logActivity('system', 'Human simulation enabled');
-      } else {
-        btn.classList.remove('active');
-        icon.className = 'fas fa-user-slash';
-        text.textContent = 'Manual';
-        stopHumanSimulation();
-        logActivity('system', 'Human simulation disabled');
-      }
-    }
-
-    function showError() {
-      const iframe = document.getElementById('modalIframe');
-      const errorMessage = document.getElementById('errorMessage');
-      const spinner = document.getElementById('spinner');
-
-      iframe.style.display = 'none';
-      errorMessage.style.display = 'flex';
-      spinner.style.display = 'none';
-      isLoading = false;
-      stopHumanSimulation();
-    }
-
-    function hideError() {
-      const iframe = document.getElementById('modalIframe');
-      const errorMessage = document.getElementById('errorMessage');
-
-      iframe.style.display = 'block';
-      errorMessage.style.display = 'none';
-    }
-
+    /**
+     * Displays a link in the iframe by its index.
+     * @param {number} index - The index of the link in the state.links array.
+     */
     function showLink(index) {
-      if (isLoading) return;
-
-      const iframe = document.getElementById('modalIframe');
-      const modal = document.getElementById('myModal');
-      const spinner = document.getElementById('spinner');
-
-      isLoading = true;
-      hideError();
-      iframe.classList.add('loading');
-      spinner.style.display = 'block';
-
-      updateSiteInfo();
-
-      iframe.src = '';
-
-      setTimeout(() => {
-        iframe.src = links[index];
-        modal.classList.add('show');
-      }, 200);
-
-      iframe.onload = () => {
-        spinner.style.display = 'none';
-        iframe.classList.remove('loading');
-        isLoading = false;
-
-        if (humanSimulationEnabled) {
-          startHumanSimulation();
-        }
-
-        logActivity('system', `Loaded ${links[index]}`);
-      };
-
-      iframe.onerror = () => {
-        showError();
-      };
-
-      const timeoutId = setTimeout(() => {
-        if (isLoading) {
-          showError();
-        }
-      }, 8000);
-
-      iframe.addEventListener('load', () => {
-        clearTimeout(timeoutId);
-      }, { once: true });
-
-      clearInterval(autoNavigateInterval);
-      autoNavigateInterval = setInterval(() => {
-        navigate(1);
-      }, Math.floor(Math.random() * (60000 - 30000 + 1) + 30000)); // 30-60 seconds
-    }
-
-    function navigate(direction) {
-      if (isLoading) return;
-
-      currentIndex = (currentIndex + direction + links.length) % links.length;
-      showLink(currentIndex);
-    }
-
-    function goToSite() {
-      try {
-        window.open(links[currentIndex], '_blank', 'noopener,noreferrer');
-      } catch (error) {
-        window.location.href = links[currentIndex];
-      }
-    }
-
-    function closeModal() {
-      const modal = document.getElementById('myModal');
-      const iframe = document.getElementById('modalIframe');
-      const fallback = document.getElementById('fallback');
-
-      stopHumanSimulation();
-
-      modal.classList.remove('show');
-      setTimeout(() => {
-        modal.style.display = 'none';
-        iframe.src = '';
-        fallback.style.display = 'flex';
+        if (state.isLoading || state.links.length === 0) return;
+        
+        state.currentIndex = index; // Update index immediately
+        state.isLoading = true;
+        clearAllTimers();
         hideError();
-      }, 300);
+        
+        dom.iframe.classList.add('loading');
+        dom.spinner.style.display = 'block';
+        updateSiteInfo();
+        
+        // Reset iframe src to ensure onload fires for same-URL navigation
+        dom.iframe.src = 'about:blank';
+        
+        setTimeout(() => {
+            dom.iframe.src = state.links[state.currentIndex];
+            dom.modal.classList.add('show');
+        }, 100);
 
-      clearInterval(autoNavigateInterval);
-      isLoading = false;
+        // Safety timeout for sites that never load or error out
+        state.timers.loadingTimeout = setTimeout(() => {
+            if (state.isLoading) {
+                showError();
+                logActivity('system', `Error: ${state.links[state.currentIndex]} timed out`);
+            }
+        }, 15000); // 15 second timeout
+
+        dom.iframe.onload = () => {
+            clearTimeout(state.timers.loadingTimeout);
+            dom.spinner.style.display = 'none';
+            dom.iframe.classList.remove('loading');
+            state.isLoading = false;
+            
+            if (state.humanSimulationEnabled) startHumanSimulation();
+            startAutoNavigateTimer();
+            logActivity('system', `Loaded ${getHostname(state.links[state.currentIndex])}`);
+        };
+
+        dom.iframe.onerror = () => {
+            clearTimeout(state.timers.loadingTimeout);
+            showError();
+            logActivity('system', `Error: Failed to load ${state.links[state.currentIndex]}`);
+        };
+    }
+
+    /**
+     * Navigates to the next or previous link.
+     * @param {number} direction - 1 for next, -1 for previous.
+     */
+    function navigate(direction) {
+        if (state.isLoading || state.links.length < 1) return;
+        state.currentIndex = (state.currentIndex + direction + state.links.length) % state.links.length;
+        showLink(state.currentIndex);
+    }
+
+    /**
+     * Opens the current site in a new tab.
+     */
+    function goToSite() {
+        if (state.links.length === 0) return;
+        window.open(state.links[state.currentIndex], '_blank', 'noopener,noreferrer');
+    }
+
+    // --- UI & UX FUNCTIONS ---
+    function closeModal() {
+        stopHumanSimulation();
+        clearAllTimers();
+        dom.modal.classList.remove('show');
+        setTimeout(() => {
+            dom.iframe.src = 'about:blank';
+            dom.fallback.style.display = 'flex';
+        }, 500);
     }
 
     function reopenModal() {
-      document.getElementById('fallback').style.display = 'none';
-      showLink(currentIndex);
+        dom.fallback.style.display = 'none';
+        showLink(state.currentIndex);
     }
 
-    // Enhanced keyboard navigation
-    document.addEventListener('keydown', (e) => {
-      if (isLoading) return;
+    function showError() {
+        dom.iframe.style.display = 'none';
+        dom.errorMessage.style.display = 'flex';
+        dom.spinner.style.display = 'none';
+        state.isLoading = false;
+        stopHumanSimulation();
+        startAutoNavigateTimer(); // Still navigate away from the broken link
+    }
 
-      const modal = document.getElementById('myModal');
-      const isModalOpen = modal.classList.contains('show');
+    function hideError() {
+        dom.iframe.style.display = 'block';
+        dom.errorMessage.style.display = 'none';
+    }
 
-      if (!isModalOpen) return;
+    function updateSiteInfo() {
+        dom.currentSite.textContent = getHostname(state.links[state.currentIndex]);
+    }
 
-      switch(e.key) {
-        case 'ArrowLeft':
-        case 'a':
-        case 'A':
-          e.preventDefault();
-          navigate(-1);
-          break;
-        case 'ArrowRight':
-        case 'd':
-        case 'D':
-          e.preventDefault();
-          navigate(1);
-          break;
-        case 'Enter':
-        case ' ':
-          e.preventDefault();
-          goToSite();
-          break;
-        case 'Escape':
-          e.preventDefault();
-          closeModal();
-          break;
-        case 'h':
-        case 'H':
-          e.preventDefault();
-          toggleHumanSimulation();
-          break;
-        case 's':
-        case 'S':
-          e.preventDefault();
-          simulateScrolling();
-          break;
-        case 'c':
-        case 'C':
-          e.preventDefault();
-          simulateClick();
-          break;
-        case 'm':
-        case 'M':
-          e.preventDefault();
-          simulateMouseMovement();
-          break;
-      }
-    });
+    function startAutoNavigateTimer() {
+        clearTimeout(state.timers.autoNavigate);
+        
+        dom.navProgressBar.style.transition = 'none';
+        dom.navProgressBar.style.width = '0%';
+        
+        // Force a reflow to restart the animation
+        void dom.navProgressBar.offsetWidth;
+        
+        dom.navProgressBar.style.transition = `width ${state.settings.autoNavInterval}s linear`;
+        dom.navProgressBar.style.width = '100%';
 
-    window.onload = function () {
-      shuffleArray(links);
-      showLink(currentIndex);
-    };
-  </script>
+        state.timers.autoNavigate = setTimeout(() => navigate(1), state.settings.autoNavInterval * 1000);
+    }
+    
+    /**
+     * Creates and displays a toast notification.
+     * @param {string} message The message to display.
+     * @param {string} type 'success' or 'error'.
+     */
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+        toast.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
+        dom.toastContainer.appendChild(toast);
+        setTimeout(() => toast.remove(), 5000);
+    }
+
+    // --- HUMAN SIMULATION ---
+    function toggleHumanSimulation() {
+        state.humanSimulationEnabled = !state.humanSimulationEnabled;
+        dom.humanBtn.classList.toggle('active', state.humanSimulationEnabled);
+        dom.humanIcon.className = state.humanSimulationEnabled ? 'fas fa-user' : 'fas fa-user-slash';
+        dom.humanText.textContent = state.humanSimulationEnabled ? 'Human' : 'Manual';
+        
+        if (state.humanSimulationEnabled) {
+            startHumanSimulation();
+            logActivity('system', 'Simulation enabled');
+        } else {
+            stopHumanSimulation();
+            logActivity('system', 'Simulation disabled');
+        }
+    }
+
+    function startHumanSimulation() {
+        if (state.timers.simulation) clearInterval(state.timers.simulation);
+        state.timers.simulation = setInterval(simulateHumanBehavior, Math.random() * 5000 + 4000); // 4-9 seconds
+    }
+
+    function stopHumanSimulation() {
+        clearInterval(state.timers.simulation);
+        state.timers.simulation = null;
+        dom.simCursor.classList.remove('active');
+        Object.values(dom.statusItems).forEach(item => item.classList.remove('active'));
+    }
+    
+    function simulateHumanBehavior() {
+        if (!state.humanSimulationEnabled || state.isLoading) return;
+        const actions = [
+            { action: simulateMouseMovement, weight: 50 },
+            { action: simulateClick, weight: 30 },
+            { action: simulateScrolling, weight: 20 }
+        ];
+        const randomAction = getWeightedRandom(actions);
+        randomAction.action();
+    }
+    
+    function simulateMouseMovement() {
+        const rect = dom.iframe.getBoundingClientRect();
+        const x = Math.random() * rect.width;
+        const y = Math.random() * rect.height;
+        
+        dom.simCursor.classList.add('active');
+        dom.statusItems.move.classList.add('active');
+        dom.simCursor.style.left = `${x}px`;
+        dom.simCursor.style.top = `${y}px`;
+        
+        logActivity('move', `Moved to (${Math.floor(x)}, ${Math.floor(y)})`);
+        setTimeout(() => dom.statusItems.move.classList.remove('active'), 2000);
+    }
+
+    function simulateClick() {
+        simulateMouseMovement(); // Move first
+        setTimeout(() => {
+            dom.simCursor.classList.add('clicking');
+            dom.statusItems.click.classList.add('active');
+            logActivity('click', 'Clicked at cursor');
+            setTimeout(() => {
+                dom.simCursor.classList.remove('clicking');
+                dom.statusItems.click.classList.remove('active');
+            }, 300);
+        }, 1200); // Wait for mouse to move
+    }
+
+    function simulateScrolling() {
+        dom.statusItems.scroll.classList.add('active');
+        logActivity('scroll', `Scrolled viewport`);
+        setTimeout(() => dom.statusItems.scroll.classList.remove('active'), 2000);
+    }
+
+    // --- ACTIVITY LOG ---
+    let activityLogData = [];
+    function logActivity(type, description) {
+        activityLogData.unshift({ type, description, timestamp: Date.now() });
+        if (activityLogData.length > 5) activityLogData.pop();
+        
+        const iconMap = {
+            scroll: 'fa-scroll', click: 'fa-mouse-pointer', move: 'fa-mouse', system: 'fa-info-circle'
+        };
+        
+        dom.activityLog.innerHTML = activityLogData.map(act => `
+            <div class="activity-item">
+                <i class="fas ${iconMap[act.type] || 'fa-circle'}"></i>
+                <span>${act.description}</span>
+            </div>
+        `).join('');
+
+        dom.activityLog.classList.add('show');
+        clearTimeout(state.timers.activityLog);
+        state.timers.activityLog = setTimeout(() => {
+            dom.activityLog.classList.remove('show');
+        }, 5000);
+    }
+
+    // --- UTILITIES ---
+
+    /**
+     * Shuffles array in place.
+     * @param {Array} a items An array containing the items.
+     */
+    function shuffleArray(a) {
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+    }
+
+    /**
+     * Gets the hostname from a full URL.
+     * @param {string} url The URL string.
+     * @returns {string} The hostname.
+     */
+    function getHostname(url) {
+        try {
+            // Using a temporary anchor element is a classic way to parse URLs in older environments, 
+            // but the URL constructor is preferred in modern JS.
+            return new URL(url).hostname.replace('www.', '');
+        } catch (e) {
+            return 'Invalid URL';
+        }
+    }
+
+    /**
+     * Gets a random item based on weights.
+     * @param {Array<{action: Function, weight: number}>} items
+     * @returns {Object} The randomly selected item.
+     */
+    function getWeightedRandom(items) {
+        const totalWeight = items.reduce((sum, item) => sum + item.weight, 0);
+        let random = Math.random() * totalWeight;
+        for (let i = 0; i < items.length; i++) {
+            if (random < items[i].weight) {
+                return items[i];
+            }
+            random -= items[i].weight;
+        }
+    }
+
+    // --- SETTINGS AND LINK MANAGEMENT ---
+
+    function openSettingsPanel() {
+        dom.settingsPanel.classList.add('open');
+    }
+
+    function closeSettingsPanel() {
+        dom.settingsPanel.classList.remove('open');
+        saveState();
+    }
+
+    function updateSettings() {
+        const interval = parseInt(dom.autoNavIntervalInput.value);
+        if (interval >= 10 && interval <= 300) {
+            state.settings.autoNavInterval = interval;
+            // Only restart the timer if the modal is currently active
+            if (dom.modal.classList.contains('show')) {
+                startAutoNavigateTimer(); 
+            }
+            showToast(`Auto-navigate set to ${interval} seconds.`, 'success');
+        } else {
+            dom.autoNavIntervalInput.value = state.settings.autoNavInterval;
+            showToast("Interval must be between 10 and 300 seconds.", 'error');
+        }
+    }
+
+    function isValidUrl(string) {
+        try {
+            new URL(string);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function addLink() {
+        const newUrl = dom.newLinkInput.value.trim();
+        if (isValidUrl(newUrl)) {
+            state.links.push(newUrl);
+            dom.newLinkInput.value = '';
+            renderLinkList();
+            saveState();
+            if (state.links.length === 1) {
+                // If this was the first link, navigate to it
+                state.currentIndex = 0;
+                showLink(state.currentIndex);
+            }
+        } else {
+            showToast("Please enter a valid URL.", 'error');
+        }
+    }
+
+    function deleteLink(index) {
+        state.links.splice(index, 1);
+        if (state.currentIndex >= state.links.length) {
+            state.currentIndex = Math.max(0, state.links.length - 1);
+        }
+        renderLinkList();
+        saveState();
+        if (state.links.length === 0) {
+            closeModal();
+            showToast("All links removed. Portal closed.", "error");
+        } else {
+            showLink(state.currentIndex);
+        }
+    }
+
+    function handleLinkListClick(event) {
+        if (event.target.classList.contains('delete-link-btn')) {
+            const index = parseInt(event.target.closest('li').dataset.index);
+            deleteLink(index);
+        }
+    }
+
+    function renderLinkList() {
+        dom.linkList.innerHTML = state.links.map((link, index) => `
+            <li data-index="${index}">
+                <span>${getHostname(link)}</span>
+                <button class="delete-link-btn" title="Remove Link"><i class="fas fa-trash"></i></button>
+            </li>
+        `).join('');
+    }
+
+    // --- KEYBOARD HANDLING ---
+    function handleKeyPress(e) {
+        if (dom.settingsPanel.classList.contains('open')) return;
+
+        switch (e.key) {
+            case 'ArrowLeft':
+                navigate(-1);
+                break;
+            case 'ArrowRight':
+                navigate(1);
+                break;
+            case 'Enter':
+                goToSite();
+                break;
+            case 'h':
+            case 'H':
+                toggleHumanSimulation();
+                break;
+            case 'Escape':
+                if (dom.modal.classList.contains('show')) {
+                    closeModal();
+                } else {
+                    reopenModal();
+                }
+                break;
+        }
+    }
+
+    // --- CLEANUP ---
+    function clearAllTimers() {
+        // Clear all named timers in the state
+        Object.values(state.timers).forEach(timer => {
+            if (timer) clearTimeout(timer);
+            if (timer) clearInterval(timer);
+        });
+        
+        // Re-initialize state timers to null
+        state.timers = {
+            autoNavigate: null,
+            simulation: null,
+            activityLog: null,
+            loadingTimeout: null,
+        };
+        
+        // Reset progress bar animation
+        dom.navProgressBar.style.transition = 'none';
+        dom.navProgressBar.style.width = '0%';
+        
+        // Stop cursor and status indicators
+        dom.simCursor.classList.remove('active');
+        Object.values(dom.statusItems).forEach(item => item.classList.remove('active'));
+    }
+
+    // --- INITIALIZATION ---
+    window.onload = init;
+
+})(); // End of IIFE
+</script>
 </body>
 </html>
