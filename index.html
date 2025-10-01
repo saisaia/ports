@@ -228,6 +228,7 @@
             opacity: 0;
             box-shadow: 0 0 10px var(--accent-color);
             z-index: 10;
+            /* Note: Transition is handled dynamically in JS for realistic movement */
             transition: all 0.3s cubic-bezier(0.4, 0, 0.6, 1);
         }
 
@@ -468,6 +469,10 @@
             margin: 1rem;
             position: relative;
             overflow: hidden;
+            display: flex; /* Ensure it is initially flex for the center effect */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         .fallback p {
@@ -602,16 +607,16 @@
                 <i class="fas fa-link"></i> <span id="currentSite">Loading...</span>
                 <br><small>active</small>
             </div>
-            <button class="btn" onclick="navigate(-1)" title="Previous Site">
+            <button class="btn" onclick="navigate(-1)" title="Previous Site (A / ←)">
                 <i class="fas fa-chevron-left"></i>
             </button>
-            <button class="btn go-btn" onclick="goToSite()" title="Open in New Tab">
+            <button class="btn go-btn" onclick="goToSite()" title="Open in New Tab (G)">
                 <i class="fas fa-external-link-alt"></i> Go
             </button>
-            <button class="btn" onclick="navigate(1)" title="Next Site">
+            <button class="btn" onclick="navigate(1)" title="Next Site (D / →)">
                 <i class="fas fa-chevron-right"></i>
             </button>
-            <button class="btn human-btn" onclick="toggleHumanSimulation()" title="Toggle Human Simulation" id="humanBtn">
+            <button class="btn human-btn" onclick="toggleHumanSimulation()" title="Toggle Human Simulation (Space)" id="humanBtn">
                 <i class="fas fa-user" id="humanIcon"></i>
                 <span id="humanText">Human</span>
             </button>
@@ -642,6 +647,8 @@
         let scrollPosition = 0;
         let lastActivity = Date.now();
         let activities = [];
+
+        // --- Utility Functions ---
 
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -674,6 +681,7 @@
             }
 
             updateActivityLog();
+            lastActivity = Date.now();
         }
 
         function updateActivityLog() {
@@ -682,8 +690,9 @@
 
             activityLog.innerHTML = activities.map(activity => {
                 const timeAgo = Math.floor((now - activity.timestamp) / 1000);
+                const icon = getActivityIcon(activity.type);
                 return `<div class="activity-item">
-                    <i class="fas fa-${getActivityIcon(activity.type)}"></i>
+                    <i class="fas fa-${icon}"></i>
                     <span>${activity.description} (${timeAgo}s ago)</span>
                 </div>`;
             }).join('');
@@ -703,12 +712,18 @@
                 click: 'mouse-pointer',
                 move: 'mouse',
                 hover: 'hand-pointer',
-                rightclick: 'context-menu'
+                rightclick: 'hand-sparkles',
+                system: 'robot'
             };
             return icons[type] || 'circle';
         }
 
-        function simulateScrolling() {
+        // --- CORE SIMULATION FUNCTIONS ---
+
+        /**
+         * 1. Scrolls the simulated scrollbar and updates indicators.
+         */
+        function simulateScroll() {
             if (!humanSimulationEnabled) return;
 
             const scrollIndicator = document.getElementById('scrollIndicator');
@@ -718,101 +733,125 @@
             scrollIndicator.classList.add('active');
             scrollStatus.classList.add('active');
 
-            // Simulate natural scrolling pattern
-            const scrollAmount = Math.random() * 80 + 10; // 10-90%
-            scrollPosition = Math.min(scrollPosition + scrollAmount, 100);
+            // Random scroll direction and magnitude for realism
+            const direction = Math.random() < 0.3 ? -1 : 1; // 30% chance to scroll up
+            const scrollMagnitude = Math.random() * 50 + 5; // 5-55% change
+            
+            scrollPosition += direction * scrollMagnitude;
 
-            if (scrollPosition >= 90) {
-                scrollPosition = 0; // Reset to top
+            // Clamp scroll position between 0 and 100
+            if (scrollPosition < 0) {
+                scrollPosition = 0;
+                logActivity('scroll', 'Scrolled back to top');
+            } else if (scrollPosition > 100) {
+                scrollPosition = 100;
+                // Introduce small jump back from the bottom
+                scrollPosition = 90 - Math.random() * 10;
+                logActivity('scroll', 'Reached bottom, scrolling up slightly');
+            } else {
+                logActivity('scroll', `Scrolled ${direction > 0 ? 'down' : 'up'} to ${Math.floor(scrollPosition)}%`);
             }
-
-            scrollThumb.style.transform = `translateY(${scrollPosition * 0.8}px)`;
-
-            logActivity('scroll', `Scrolled to ${Math.floor(scrollPosition)}%`);
+            
+            // Visually update the scroll thumb (80 is a multiplier to keep it inside the 100px indicator)
+            const thumbPosition = scrollPosition * (80) / 100; 
+            scrollThumb.style.transform = `translateY(${thumbPosition}px)`;
 
             setTimeout(() => {
                 scrollIndicator.classList.remove('active');
                 scrollStatus.classList.remove('active');
-            }, 2000);
+            }, 1500 + Math.random() * 1000); // Hold status for 1.5 - 2.5 seconds
         }
 
-        function simulateMouseMovement() {
+        /**
+         * 2. Moves the simulated cursor to a new random location.
+         */
+        function simulateMove(targetX = null, targetY = null) {
             if (!humanSimulationEnabled) return;
 
             const cursor = document.getElementById('simCursor');
             const moveStatus = document.getElementById('moveStatus');
             const overlay = document.getElementById('interactionOverlay');
-
-            // Get random position within iframe area
             const rect = overlay.getBoundingClientRect();
-            const x = Math.random() * (rect.width - 40) + 20;
-            const y = Math.random() * (rect.height - 40) + 20;
+
+            let x = targetX !== null ? targetX : Math.random() * (rect.width - 40) + 20;
+            let y = targetY !== null ? targetY : Math.random() * (rect.height - 40) + 20;
 
             cursor.classList.add('active');
             moveStatus.classList.add('active');
+            // Use a longer, smoother transition for movement
+            cursor.style.transition = `all ${Math.random() * 1.5 + 0.5}s ease-out`;
             cursor.style.left = x + 'px';
             cursor.style.top = y + 'px';
 
             logActivity('move', `Mouse moved to (${Math.floor(x)}, ${Math.floor(y)})`);
 
             setTimeout(() => {
-                cursor.classList.remove('active');
+                // Reset transition for click/hover effects to be snappy
+                cursor.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.6, 1)';
                 moveStatus.classList.remove('active');
-            }, 3000);
+            }, 1000 + Math.random() * 500); // Time to hold move status
         }
 
+        /**
+         * 3. Simulates a left click, often preceded by a move.
+         */
         function simulateClick() {
             if (!humanSimulationEnabled) return;
 
             const cursor = document.getElementById('simCursor');
             const clickStatus = document.getElementById('clickStatus');
 
-            // First move cursor to click position
-            simulateMouseMovement();
+            // 80% chance to move before clicking for realism
+            if (Math.random() < 0.8) {
+                simulateMove(); 
+            }
 
             setTimeout(() => {
                 cursor.classList.add('clicking');
                 clickStatus.classList.add('active');
 
-                logActivity('click', 'Left clicked at cursor position');
+                logActivity('click', 'Left clicked (User Interaction)');
 
                 setTimeout(() => {
                     cursor.classList.remove('clicking');
                     clickStatus.classList.remove('active');
-                }, 500);
-            }, 1000);
+                }, 300 + Math.random() * 200); // Quick, snappy click
+            }, 500 + Math.random() * 500); // 0.5-1.0 second pause before clicking
         }
-
+        
+        // Secondary/Less Frequent Action
         function simulateRightClick() {
             if (!humanSimulationEnabled) return;
 
-            simulateMouseMovement();
+            simulateMove();
 
             setTimeout(() => {
                 const cursor = document.getElementById('simCursor');
-                cursor.style.background = 'var(--warning-color)';
-                cursor.style.boxShadow = '0 0 15px var(--warning-color)';
+                cursor.style.background = 'var(--secondary-accent)'; 
+                cursor.style.boxShadow = '0 0 15px var(--secondary-accent)';
+                cursor.classList.add('clicking');
 
-                logActivity('rightclick', 'Right clicked (context menu)');
+                logActivity('rightclick', 'Context menu opened (Right Click)');
 
                 setTimeout(() => {
+                    cursor.classList.remove('clicking');
                     cursor.style.background = 'var(--accent-color)';
                     cursor.style.boxShadow = '0 0 10px var(--accent-color)';
-                }, 1000);
-            }, 1000);
+                }, 1000 + Math.random() * 500); // Longer pause for a right-click "thinking" time
+            }, 1000 + Math.random() * 1000);
         }
 
         function simulateHumanBehavior() {
-            if (!humanSimulationEnabled) return;
+            if (!humanSimulationEnabled || isLoading) return;
 
+            // Weighted random selection of actions for human-like variety
             const actions = [
-                { action: simulateScrolling, weight: 40 },
-                { action: simulateMouseMovement, weight: 30 },
-                { action: simulateClick, weight: 20 },
-                { action: simulateRightClick, weight: 10 }
+                { action: simulateScroll, weight: 50 },          
+                { action: simulateMove, weight: 30 },      
+                { action: simulateClick, weight: 15 },              
+                { action: simulateRightClick, weight: 5 }           
             ];
 
-            // Weighted random selection
             const totalWeight = actions.reduce((sum, item) => sum + item.weight, 0);
             let random = Math.random() * totalWeight;
 
@@ -825,27 +864,36 @@
             }
         }
 
+        // --- Portal Navigation and State Functions ---
+        
         function startHumanSimulation() {
             if (simulationInterval) {
                 clearInterval(simulationInterval);
             }
 
-            simulationInterval = setInterval(() => {
+            // Define a function that manages its own recursive timing
+            const recursiveSimulate = () => {
+                if (!humanSimulationEnabled) return;
                 simulateHumanBehavior();
-            }, Math.random() * 8000 + 3000); // 3-11 seconds
+                
+                // Set a new random interval for the next action
+                const nextInterval = Math.random() * 8000 + 3000; // 3-11 seconds
+                simulationInterval = setTimeout(recursiveSimulate, nextInterval);
+            };
+
+            // Start the first iteration
+            recursiveSimulate();
         }
 
         function stopHumanSimulation() {
             if (simulationInterval) {
-                clearInterval(simulationInterval);
+                clearTimeout(simulationInterval); 
                 simulationInterval = null;
             }
-
             // Hide all simulation elements
-            document.getElementById('simCursor').classList.remove('active');
+            document.getElementById('simCursor').classList.remove('active', 'clicking');
             document.getElementById('scrollIndicator').classList.remove('active');
-            document.getElementById('activityLog').classList.remove('show');
-
+            
             // Reset status indicators
             document.querySelectorAll('.status-item').forEach(item => {
                 item.classList.remove('active');
@@ -907,7 +955,8 @@
 
             updateSiteInfo();
 
-            iframe.src = '';
+            // Clear the source immediately to force a reload and prevent visual flickering
+            iframe.src = 'about:blank'; 
 
             setTimeout(() => {
                 iframe.src = links[index];
@@ -930,34 +979,40 @@
                 showError();
             };
 
+            // Add a timeout check to detect iframe loading failure
             const timeoutId = setTimeout(() => {
                 if (isLoading) {
                     showError();
+                    logActivity('system', 'Error: Load timeout or cross-origin block detected');
                 }
-            }, 8000);
+            }, 8000); // 8-second timeout
 
             iframe.addEventListener('load', () => {
                 clearTimeout(timeoutId);
             }, { once: true });
 
+            // Clear and restart auto-navigate interval
             clearInterval(autoNavigateInterval);
             autoNavigateInterval = setInterval(() => {
                 navigate(1);
-            }, Math.floor(Math.random() * (60000 - 30000 + 1) + 30000)); // 30-60 seconds
+            }, Math.floor(Math.random() * (60000 - 30000 + 1) + 30000)); // 30-60 seconds between navigations
         }
 
         function navigate(direction) {
             if (isLoading) return;
 
             currentIndex = (currentIndex + direction + links.length) % links.length;
+            logActivity('system', `Navigating to index ${currentIndex}`);
             showLink(currentIndex);
         }
 
         function goToSite() {
             try {
                 window.open(links[currentIndex], '_blank', 'noopener,noreferrer');
+                logActivity('system', 'Opened site in new tab');
             } catch (error) {
                 window.location.href = links[currentIndex];
+                logActivity('system', 'Navigated directly to site');
             }
         }
 
@@ -978,12 +1033,16 @@
 
             clearInterval(autoNavigateInterval);
             isLoading = false;
+            logActivity('system', 'Portal closed');
         }
 
         function reopenModal() {
             document.getElementById('fallback').style.display = 'none';
+            document.getElementById('myModal').style.display = 'flex';
             showLink(currentIndex);
         }
+
+        // --- Initialization and Event Listeners ---
 
         // Enhanced keyboard navigation
         document.addEventListener('keydown', (e) => {
@@ -992,57 +1051,71 @@
             const modal = document.getElementById('myModal');
             const isModalOpen = modal.classList.contains('show');
 
-            if (!isModalOpen) return;
+            if (!isModalOpen) {
+                if (e.key === 'Enter') {
+                    reopenModal();
+                    e.preventDefault();
+                }
+                return;
+            }
 
             switch(e.key) {
                 case 'ArrowLeft':
                 case 'a':
                 case 'A':
-                    e.preventDefault();
                     navigate(-1);
                     break;
                 case 'ArrowRight':
                 case 'd':
                 case 'D':
-                    e.preventDefault();
                     navigate(1);
                     break;
-                case 'Enter':
-                case ' ':
-                    e.preventDefault();
-                    goToSite();
-                    break;
                 case 'Escape':
-                    e.preventDefault();
                     closeModal();
                     break;
-                case 'h':
-                case 'H':
+                case ' ': // Spacebar to toggle simulation
                     e.preventDefault();
                     toggleHumanSimulation();
                     break;
+                case 'g': // 'g' for Go to Site
+                case 'G':
+                    goToSite();
+                    break;
+                // Simulation shortcuts
                 case 's':
                 case 'S':
-                    e.preventDefault();
-                    simulateScrolling();
+                    simulateScroll();
                     break;
                 case 'c':
                 case 'C':
-                    e.preventDefault();
                     simulateClick();
                     break;
                 case 'm':
                 case 'M':
-                    e.preventDefault();
-                    simulateMouseMovement();
+                    simulateMove();
+                    break;
+                default:
                     break;
             }
         });
 
-        window.onload = function () {
-            shuffleArray(links);
-            showLink(currentIndex);
-        };
+        // Initial setup
+        document.addEventListener('DOMContentLoaded', () => {
+            shuffleArray(links); // Randomize link order on load
+            // Only show fallback initially, the user must click to "Enter Portal"
+            document.getElementById('myModal').style.display = 'none';
+            document.getElementById('fallback').style.display = 'flex';
+            
+            // Initial state for the simulation toggle button
+            if (humanSimulationEnabled) {
+                document.getElementById('humanBtn').classList.add('active');
+                document.getElementById('humanIcon').className = 'fas fa-user';
+                document.getElementById('humanText').textContent = 'Human';
+            } else {
+                document.getElementById('humanIcon').className = 'fas fa-user-slash';
+                document.getElementById('humanText').textContent = 'Manual';
+            }
+        });
     </script>
 </body>
 </html>
