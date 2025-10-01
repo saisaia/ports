@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal</title>
+    <title>Portal System [Active]</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* --- Variables & Global Reset --- */
         :root {
             --bg-color: #0a0a0a;
             --text-color: #ffffff;
@@ -17,13 +18,11 @@
             --border-radius: 12px;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             font-family: 'Orbitron', monospace;
             background: linear-gradient(135deg, var(--bg-color) 0%, #1a1a2e 50%, #16213e 100%);
@@ -35,7 +34,6 @@
             overflow: hidden;
             position: relative;
         }
-
         body::before {
             content: '';
             position: fixed;
@@ -44,17 +42,16 @@
             width: 100%;
             height: 100%;
             background: radial-gradient(circle at 20% 20%, rgba(0, 255, 136, 0.1), transparent 50%),
-                        radial-gradient(circle at 80% 80%, rgba(255, 0, 136, 0.1), transparent 50%);
+                         radial-gradient(circle at 80% 80%, rgba(255, 0, 136, 0.1), transparent 50%);
             pointer-events: none;
             animation: pulse 4s ease-in-out infinite alternate;
         }
-
         @keyframes pulse {
             0% { opacity: 0.5; }
             100% { opacity: 1; }
         }
 
-        /* Modal Styles - Full Screen */
+        /* --- Modal and Header Styles --- */
         .modal {
             position: fixed;
             top: 0;
@@ -66,23 +63,14 @@
             z-index: 1000;
             animation: zoomIn 0.5s ease forwards;
         }
-
         .modal.show {
             display: flex;
             flex-direction: column;
         }
-
         @keyframes zoomIn {
-            from {
-                opacity: 0;
-                transform: scale(0.8);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
         }
-
         .modal-header {
             display: flex;
             justify-content: space-between;
@@ -96,53 +84,26 @@
             text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
             position: relative;
             overflow: hidden;
+            z-index: 10;
         }
-
-        .modal-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: conic-gradient(var(--accent-color), var(--secondary-accent), var(--accent-color));
-            opacity: 0.05;
-            animation: rotate 15s linear infinite;
-            z-index: -1;
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
         .close {
             cursor: pointer;
             font-size: 2rem;
             color: var(--accent-color);
             transition: var(--transition);
-            padding: 0.5rem;
-            border-radius: 50%;
-            width: 3rem;
-            height: 3rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
-
         .close:hover {
             color: var(--secondary-accent);
-            background: rgba(255, 0, 136, 0.1);
             transform: rotate(90deg);
         }
 
+        /* --- Status Indicators & Spinner --- */
         .simulation-status {
             display: flex;
             align-items: center;
             gap: 1rem;
             font-size: 0.9rem;
         }
-
         .status-item {
             display: flex;
             align-items: center;
@@ -152,22 +113,17 @@
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
         .status-item.active {
             border-color: var(--accent-color);
             background: rgba(0, 255, 136, 0.1);
         }
-
         .status-item.active i {
             animation: statusBlink 1.5s ease-in-out infinite;
         }
-
         @keyframes statusBlink {
             0%, 50% { opacity: 1; }
             51%, 100% { opacity: 0.3; }
         }
-
-        /* Enhanced Spinner */
         .spinner {
             border: 4px solid rgba(0, 255, 136, 0.1);
             border-top: 4px solid var(--accent-color);
@@ -179,20 +135,17 @@
             display: none;
             box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
         }
-
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
 
-        /* Content container for iframe and overlays */
+        /* --- Content and Simulation Elements --- */
         .content-container {
             flex: 1;
             position: relative;
             display: flex;
             flex-direction: column;
         }
-
-        /* Enhanced iframe */
         iframe {
             width: 100%;
             flex: 1;
@@ -200,13 +153,10 @@
             background: #fff;
             transition: var(--transition);
         }
-
         iframe.loading {
             opacity: 0.7;
             filter: blur(2px);
         }
-
-        /* Interaction overlay for visual effects */
         .interaction-overlay {
             position: absolute;
             top: 0;
@@ -216,8 +166,6 @@
             pointer-events: none;
             z-index: 5;
         }
-
-        /* Simulated cursor */
         .sim-cursor {
             position: absolute;
             width: 20px;
@@ -228,48 +176,39 @@
             opacity: 0;
             box-shadow: 0 0 10px var(--accent-color);
             z-index: 10;
-            /* Note: Transition is handled dynamically in JS for realistic movement */
             transition: all 0.3s cubic-bezier(0.4, 0, 0.6, 1);
         }
-
         .sim-cursor.active {
             opacity: 0.8;
         }
-
         .sim-cursor.clicking {
             transform: translate(-10px, -10px) scale(0.7);
             background: var(--secondary-accent);
             box-shadow: 0 0 15px var(--secondary-accent);
         }
-
-        /* Scroll indicator */
         .scroll-indicator {
             position: absolute;
             right: 10px;
             top: 50%;
             transform: translateY(-50%);
             width: 30px;
-            height: 100px;
+            height: 100px; /* Indicator height */
             background: rgba(0, 255, 136, 0.1);
             border: 2px solid var(--accent-color);
             border-radius: 15px;
             opacity: 0;
             transition: var(--transition);
         }
-
         .scroll-indicator.active {
             opacity: 1;
         }
-
         .scroll-thumb {
             width: 100%;
-            height: 20px;
+            height: 20px; /* Thumb height */
             background: var(--accent-color);
             border-radius: 10px;
             transition: all 0.5s ease;
         }
-
-        /* Activity log */
         .activity-log {
             position: absolute;
             bottom: 10px;
@@ -284,12 +223,10 @@
             transition: var(--transition);
             font-size: 0.8rem;
         }
-
         .activity-log.show {
             opacity: 1;
             transform: translateY(0);
         }
-
         .activity-item {
             display: flex;
             align-items: center;
@@ -298,7 +235,7 @@
             color: var(--accent-color);
         }
 
-        /* Error message styling */
+        /* --- Error and Navigation Buttons (Unchanged) --- */
         .error-message {
             display: none;
             flex: 1;
@@ -308,237 +245,35 @@
             padding: 2rem;
             background: linear-gradient(135deg, rgba(26, 26, 46, 0.8), rgba(22, 33, 62, 0.8));
         }
+        .error-content { max-width: 500px; }
+        .error-content h3 { color: var(--secondary-accent); font-size: 1.5rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .error-content p { color: var(--text-color); opacity: 0.8; margin-bottom: 1.5rem; line-height: 1.6; }
+        .error-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .nav-buttons { display: flex; justify-content: center; align-items: center; gap: 0.75rem; padding: 1rem 2rem; background: linear-gradient(135deg, rgba(26, 26, 46, 0.9), rgba(22, 33, 62, 0.9)); border-top: 2px solid var(--accent-color); position: relative; flex-wrap: wrap; }
+        .nav-buttons::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.05), transparent); animation: scan 3s ease-in-out infinite; }
+        @keyframes scan { 0%, 100% { transform: translateX(-100%); } 50% { transform: translateX(100%); } }
+        .btn { background: linear-gradient(45deg, rgba(0, 255, 136, 0.1), rgba(0, 255, 136, 0.3)); border: 2px solid var(--accent-color); color: var(--text-color); padding: 0.6rem 0.8rem; border-radius: var(--border-radius); cursor: pointer; font-family: 'Orbitron', monospace; font-size: 0.85rem; font-weight: 400; transition: var(--transition); position: relative; overflow: hidden; min-width: 50px; display: flex; align-items: center; justify-content: center; gap: 0.4rem; text-decoration: none; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 255, 136, 0.4); border-color: var(--secondary-accent); }
+        .go-btn { background: linear-gradient(45deg, rgba(255, 0, 136, 0.2), rgba(255, 0, 136, 0.4)); border-color: var(--secondary-accent); font-weight: 700; }
+        .go-btn:hover { box-shadow: 0 8px 25px rgba(255, 0, 136, 0.4); }
+        .human-btn { background: linear-gradient(45deg, rgba(255, 165, 0, 0.2), rgba(255, 165, 0, 0.4)); border-color: var(--warning-color); }
+        .human-btn:hover { box-shadow: 0 8px 25px rgba(255, 165, 0, 0.4); }
+        .human-btn.active { background: linear-gradient(45deg, rgba(255, 165, 0, 0.4), rgba(255, 165, 0, 0.6)); box-shadow: 0 0 15px rgba(255, 165, 0, 0.6); }
+        .site-info { position: absolute; top: 50%; left: 1rem; transform: translateY(-50%); background: rgba(0, 0, 0, 0.8); padding: 0.5rem 1rem; border-radius: var(--border-radius); border: 1px solid var(--accent-color); font-size: 0.8rem; opacity: 0; transition: var(--transition); max-width: 200px; word-break: break-word; }
+        .nav-buttons:hover .site-info { opacity: 1; }
+        .fallback { text-align: center; padding: 3rem 2rem; background: rgba(26, 26, 46, 0.5); border-radius: var(--border-radius); border: 1px solid rgba(0, 255, 136, 0.3); backdrop-filter: blur(10px); max-width: 500px; margin: 1rem; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .fallback p { margin-bottom: 2rem; font-size: 1.2rem; opacity: 0.9; animation: fadeIn 1s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .show-modal-btn { background: linear-gradient(45deg, var(--accent-color), var(--secondary-accent)); border: none; color: var(--bg-color); padding: 1rem 2rem; border-radius: var(--border-radius); font-family: 'Orbitron', monospace; font-weight: 700; cursor: pointer; transition: var(--transition); font-size: 1.1rem; }
+        .show-modal-btn:hover { transform: scale(1.05); box-shadow: 0 15px 35px rgba(0, 255, 136, 0.4); }
 
-        .error-content {
-            max-width: 500px;
-        }
-
-        .error-content h3 {
-            color: var(--secondary-accent);
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .error-content p {
-            color: var(--text-color);
-            opacity: 0.8;
-            margin-bottom: 1.5rem;
-            line-height: 1.6;
-        }
-
-        .error-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        /* Enhanced Navigation Controls */
-        .nav-buttons {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 1rem 2rem;
-            background: linear-gradient(135deg, rgba(26, 26, 46, 0.9), rgba(22, 33, 62, 0.9));
-            border-top: 2px solid var(--accent-color);
-            position: relative;
-            flex-wrap: wrap;
-        }
-
-        .nav-buttons::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.05), transparent);
-            animation: scan 3s ease-in-out infinite;
-        }
-
-        @keyframes scan {
-            0%, 100% { transform: translateX(-100%); }
-            50% { transform: translateX(100%); }
-        }
-
-        .btn {
-            background: linear-gradient(45deg, rgba(0, 255, 136, 0.1), rgba(0, 255, 136, 0.3));
-            border: 2px solid var(--accent-color);
-            color: var(--text-color);
-            padding: 0.6rem 0.8rem;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            font-family: 'Orbitron', monospace;
-            font-size: 0.85rem;
-            font-weight: 400;
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-            min-width: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.4rem;
-            text-decoration: none;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: var(--transition);
-        }
-
-        .btn:hover::before {
-            left: 100%;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.4);
-            border-color: var(--secondary-accent);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .go-btn {
-            background: linear-gradient(45deg, rgba(255, 0, 136, 0.2), rgba(255, 0, 136, 0.4));
-            border-color: var(--secondary-accent);
-            font-weight: 700;
-        }
-
-        .go-btn:hover {
-            box-shadow: 0 8px 25px rgba(255, 0, 136, 0.4);
-        }
-
-        .human-btn {
-            background: linear-gradient(45deg, rgba(255, 165, 0, 0.2), rgba(255, 165, 0, 0.4));
-            border-color: var(--warning-color);
-        }
-
-        .human-btn:hover {
-            box-shadow: 0 8px 25px rgba(255, 165, 0, 0.4);
-        }
-
-        .human-btn.active {
-            background: linear-gradient(45deg, rgba(255, 165, 0, 0.4), rgba(255, 165, 0, 0.6));
-            box-shadow: 0 0 15px rgba(255, 165, 0, 0.6);
-        }
-
-        /* Site Info Display */
-        .site-info {
-            position: absolute;
-            top: 50%;
-            left: 1rem;
-            transform: translateY(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            padding: 0.5rem 1rem;
-            border-radius: var(--border-radius);
-            border: 1px solid var(--accent-color);
-            font-size: 0.8rem;
-            opacity: 0;
-            transition: var(--transition);
-            max-width: 200px;
-            word-break: break-word;
-        }
-
-        .nav-buttons:hover .site-info {
-            opacity: 1;
-        }
-
-        /* Fallback Styles */
-        .fallback {
-            text-align: center;
-            padding: 3rem 2rem;
-            background: rgba(26, 26, 46, 0.5);
-            border-radius: var(--border-radius);
-            border: 1px solid rgba(0, 255, 136, 0.3);
-            backdrop-filter: blur(10px);
-            max-width: 500px;
-            margin: 1rem;
-            position: relative;
-            overflow: hidden;
-            display: flex; /* Ensure it is initially flex for the center effect */
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .fallback p {
-            margin-bottom: 2rem;
-            font-size: 1.2rem;
-            opacity: 0.9;
-            animation: fadeIn 1s ease forwards;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .show-modal-btn {
-            background: linear-gradient(45deg, var(--accent-color), var(--secondary-accent));
-            border: none;
-            color: var(--bg-color);
-            padding: 1rem 2rem;
-            border-radius: var(--border-radius);
-            font-family: 'Orbitron', monospace;
-            font-weight: 700;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 1.1rem;
-        }
-
-        .show-modal-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 15px 35px rgba(0, 255, 136, 0.4);
-        }
-
-        /* Responsive Design */
+        /* --- Responsive Design (Unchanged) --- */
         @media (max-width: 768px) {
-            .modal-header {
-                padding: 0.75rem 1rem;
-                font-size: 1rem;
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-
-            .simulation-status {
-                font-size: 0.8rem;
-                gap: 0.5rem;
-            }
-
-            .nav-buttons {
-                padding: 0.75rem 1rem;
-                gap: 0.5rem;
-            }
-
-            .btn {
-                padding: 0.5rem 0.6rem;
-                font-size: 0.75rem;
-                min-width: 40px;
-            }
-
-            .site-info {
-                display: none;
-            }
+            .modal-header { padding: 0.75rem 1rem; font-size: 1rem; flex-direction: column; gap: 0.5rem; }
+            .simulation-status { font-size: 0.8rem; gap: 0.5rem; }
+            .nav-buttons { padding: 0.75rem 1rem; gap: 0.5rem; }
+            .btn { padding: 0.5rem 0.6rem; font-size: 0.75rem; min-width: 40px; }
+            .site-info { display: none; }
         }
     </style>
 </head>
@@ -631,22 +366,40 @@
     </div>
 
     <script>
-        // NOTE: The original links are preserved here as they were part of the initial code block.
-        let links = [
+        // --- Configuration & State ---
+        // NOTE: The two ad links are now here, separated for explicit use in the ad launch logic.
+        const AD_LINKS = [
             'https://www.revenuecpmgate.com/wssnwv2pmz?key=959022a0974bc8ddd427a1ec9c2049b1',
             'https://www.revenuecpmgate.com/n3a4mbwqv?key=4b23dfc27f908fb5aa3fb1c61634d099'
         ];
+        
+        // Use the ad links as the content pool for rotation
+        let links = [...AD_LINKS]; 
 
         let currentIndex = 0;
-        let autoNavigateInterval;
         let isLoading = false;
         let humanSimulationEnabled = true;
         let simulationInterval;
         let activityTimeout;
 
-        let scrollPosition = 0;
-        let lastActivity = Date.now();
+        let scrollPosition = 0; // Represents scroll progress from 0 (top) to 100 (bottom)
         let activities = [];
+
+        // --- Ad Launch and Portal Entry ---
+
+        function launchAdsAndOpenPortal() {
+            // 1. Launch Ads in New Tabs (Requirement 1: Guaranteed Ad Count)
+            AD_LINKS.forEach((url, index) => {
+                // Open ads with a slight stagger for realism and browser safety
+                setTimeout(() => {
+                    // Use '_blank' to ensure separate new windows for valid ad count
+                    window.open(url, `adWindow${index}`, 'noopener,noreferrer');
+                }, 100 * index); 
+            });
+            
+            // 2. Open the Portal (The main content iframe)
+            reopenModal(); 
+        }
 
         // --- Utility Functions ---
 
@@ -674,19 +427,18 @@
                 description: description,
                 timestamp: Date.now()
             });
-
-            // Keep only last 5 activities
             if (activities.length > 5) {
                 activities = activities.slice(0, 5);
             }
-
             updateActivityLog();
-            lastActivity = Date.now();
         }
 
         function updateActivityLog() {
             const activityLog = document.getElementById('activityLog');
             const now = Date.now();
+            const getActivityIcon = (type) => ({
+                scroll: 'scroll', click: 'mouse-pointer', move: 'mouse', hover: 'hand-pointer', rightclick: 'hand-sparkles', system: 'robot'
+            })[type] || 'circle';
 
             activityLog.innerHTML = activities.map(activity => {
                 const timeAgo = Math.floor((now - activity.timestamp) / 1000);
@@ -706,26 +458,10 @@
             }
         }
 
-        function getActivityIcon(type) {
-            const icons = {
-                scroll: 'scroll',
-                click: 'mouse-pointer',
-                move: 'mouse',
-                hover: 'hand-pointer',
-                rightclick: 'hand-sparkles',
-                system: 'robot'
-            };
-            return icons[type] || 'circle';
-        }
+        // --- Simulation Functions ---
 
-        // --- CORE SIMULATION FUNCTIONS ---
-
-        /**
-         * 1. Scrolls the simulated scrollbar and updates indicators.
-         */
-        function simulateScroll() {
+        function simulateScrolling() {
             if (!humanSimulationEnabled) return;
-
             const scrollIndicator = document.getElementById('scrollIndicator');
             const scrollThumb = document.getElementById('scrollThumb');
             const scrollStatus = document.getElementById('scrollStatus');
@@ -733,39 +469,41 @@
             scrollIndicator.classList.add('active');
             scrollStatus.classList.add('active');
 
-            // Random scroll direction and magnitude for realism
-            const direction = Math.random() < 0.3 ? -1 : 1; // 30% chance to scroll up
-            const scrollMagnitude = Math.random() * 50 + 5; // 5-55% change
+            const direction = Math.random() < 0.3 ? -1 : 1; 
+            const scrollMagnitude = Math.random() * 15 + 5; // Smaller, more frequent scrolls
             
             scrollPosition += direction * scrollMagnitude;
 
-            // Clamp scroll position between 0 and 100
+            // Clamp scroll position
             if (scrollPosition < 0) {
                 scrollPosition = 0;
-                logActivity('scroll', 'Scrolled back to top');
+                logActivity('scroll', 'Scrolled to top');
             } else if (scrollPosition > 100) {
-                scrollPosition = 100;
-                // Introduce small jump back from the bottom
-                scrollPosition = 90 - Math.random() * 10;
-                logActivity('scroll', 'Reached bottom, scrolling up slightly');
+                scrollPosition = 100; // Let it reach 100 for a moment
+                // Immediately start scrolling back up for a more human feel
+                setTimeout(() => {
+                    scrollPosition = 90 - Math.random() * 10;
+                    logActivity('scroll', 'Reached bottom, scrolling up');
+                }, 500);
             } else {
                 logActivity('scroll', `Scrolled ${direction > 0 ? 'down' : 'up'} to ${Math.floor(scrollPosition)}%`);
             }
             
-            // Visually update the scroll thumb (80 is a multiplier to keep it inside the 100px indicator)
-            const thumbPosition = scrollPosition * (80) / 100; 
+            // Calculate thumb position based on indicator and thumb height (100px - 20px = 80px available travel)
+            const indicatorHeight = 100;
+            const thumbHeight = 20;
+            const travelRange = indicatorHeight - thumbHeight;
+            const thumbPosition = scrollPosition * (travelRange / 100);
+
             scrollThumb.style.transform = `translateY(${thumbPosition}px)`;
 
             setTimeout(() => {
                 scrollIndicator.classList.remove('active');
                 scrollStatus.classList.remove('active');
-            }, 1500 + Math.random() * 1000); // Hold status for 1.5 - 2.5 seconds
+            }, 1000 + Math.random() * 500); // Shorter duration
         }
 
-        /**
-         * 2. Moves the simulated cursor to a new random location.
-         */
-        function simulateMove(targetX = null, targetY = null) {
+        function simulateMouseMovement(targetX = null, targetY = null) {
             if (!humanSimulationEnabled) return;
 
             const cursor = document.getElementById('simCursor');
@@ -778,33 +516,38 @@
 
             cursor.classList.add('active');
             moveStatus.classList.add('active');
-            // Use a longer, smoother transition for movement
-            cursor.style.transition = `all ${Math.random() * 1.5 + 0.5}s ease-out`;
+            
+            // Smoother movement with variable duration
+            const duration = Math.random() * 1.5 + 0.5; // 0.5s to 2s
+            cursor.style.transition = `all ${duration}s cubic-bezier(0.25, 0.1, 0.25, 1)`; 
             cursor.style.left = x + 'px';
             cursor.style.top = y + 'px';
 
             logActivity('move', `Mouse moved to (${Math.floor(x)}, ${Math.floor(y)})`);
 
+            // Remove status after movement completes
             setTimeout(() => {
-                // Reset transition for click/hover effects to be snappy
-                cursor.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.6, 1)';
+                cursor.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.6, 1)'; // Reset for clicks
                 moveStatus.classList.remove('active');
-            }, 1000 + Math.random() * 500); // Time to hold move status
+            }, duration * 1000);
+            
+            // Return target coordinates for use in click
+            return { x, y };
         }
 
-        /**
-         * 3. Simulates a left click, often preceded by a move.
-         */
         function simulateClick() {
             if (!humanSimulationEnabled) return;
 
             const cursor = document.getElementById('simCursor');
             const clickStatus = document.getElementById('clickStatus');
+            const overlay = document.getElementById('interactionOverlay');
+            const rect = overlay.getBoundingClientRect();
+            
+            // Move cursor to a clickable area before clicking (e.g., center or lower half)
+            const targetX = Math.random() * (rect.width * 0.7) + (rect.width * 0.15); // Center 70% width
+            const targetY = Math.random() * (rect.height * 0.6) + (rect.height * 0.3); // Lower 60% height
 
-            // 80% chance to move before clicking for realism
-            if (Math.random() < 0.8) {
-                simulateMove(); 
-            }
+            simulateMouseMovement(targetX, targetY); 
 
             setTimeout(() => {
                 cursor.classList.add('clicking');
@@ -815,15 +558,14 @@
                 setTimeout(() => {
                     cursor.classList.remove('clicking');
                     clickStatus.classList.remove('active');
-                }, 300 + Math.random() * 200); // Quick, snappy click
-            }, 500 + Math.random() * 500); // 0.5-1.0 second pause before clicking
+                }, 300 + Math.random() * 200); 
+            }, 1000 + Math.random() * 1000); // Wait for the movement to complete
         }
-        
-        // Secondary/Less Frequent Action
+
         function simulateRightClick() {
             if (!humanSimulationEnabled) return;
 
-            simulateMove();
+            simulateMouseMovement();
 
             setTimeout(() => {
                 const cursor = document.getElementById('simCursor');
@@ -837,17 +579,16 @@
                     cursor.classList.remove('clicking');
                     cursor.style.background = 'var(--accent-color)';
                     cursor.style.boxShadow = '0 0 10px var(--accent-color)';
-                }, 1000 + Math.random() * 500); // Longer pause for a right-click "thinking" time
+                }, 1000 + Math.random() * 500); 
             }, 1000 + Math.random() * 1000);
         }
 
         function simulateHumanBehavior() {
             if (!humanSimulationEnabled || isLoading) return;
 
-            // Weighted random selection of actions for human-like variety
             const actions = [
-                { action: simulateScroll, weight: 50 },          
-                { action: simulateMove, weight: 30 },      
+                { action: simulateScrolling, weight: 50 },          
+                { action: simulateMouseMovement, weight: 30 },      
                 { action: simulateClick, weight: 15 },              
                 { action: simulateRightClick, weight: 5 }           
             ];
@@ -863,63 +604,62 @@
                 random -= item.weight;
             }
         }
-
-        // --- Portal Navigation and State Functions ---
         
         function startHumanSimulation() {
-            if (simulationInterval) {
-                clearInterval(simulationInterval);
-            }
+            stopHumanSimulation(); // Clear any existing timeout
+            humanSimulationEnabled = true;
+            document.getElementById('humanBtn').classList.add('active');
+            document.getElementById('humanIcon').className = 'fas fa-user';
+            document.getElementById('humanText').textContent = 'Human';
 
-            // Define a function that manages its own recursive timing
             const recursiveSimulate = () => {
                 if (!humanSimulationEnabled) return;
                 simulateHumanBehavior();
-                
-                // Set a new random interval for the next action
                 const nextInterval = Math.random() * 8000 + 3000; // 3-11 seconds
                 simulationInterval = setTimeout(recursiveSimulate, nextInterval);
             };
-
-            // Start the first iteration
             recursiveSimulate();
+            logActivity('system', 'Human simulation enabled');
         }
+
 
         function stopHumanSimulation() {
             if (simulationInterval) {
-                clearTimeout(simulationInterval); 
+                clearTimeout(simulationInterval);
                 simulationInterval = null;
             }
-            // Hide all simulation elements
             document.getElementById('simCursor').classList.remove('active', 'clicking');
             document.getElementById('scrollIndicator').classList.remove('active');
-            
-            // Reset status indicators
             document.querySelectorAll('.status-item').forEach(item => {
                 item.classList.remove('active');
             });
+            logActivity('system', 'Human simulation disabled');
         }
 
-        function toggleHumanSimulation() {
-            humanSimulationEnabled = !humanSimulationEnabled;
+        function toggleHumanSimulation(manualToggle = true) {
+            if (manualToggle) {
+                humanSimulationEnabled = !humanSimulationEnabled;
+            }
+            
             const btn = document.getElementById('humanBtn');
             const icon = document.getElementById('humanIcon');
             const text = document.getElementById('humanText');
-
+            
             if (humanSimulationEnabled) {
                 btn.classList.add('active');
                 icon.className = 'fas fa-user';
                 text.textContent = 'Human';
-                startHumanSimulation();
-                logActivity('system', 'Human simulation enabled');
+                if(manualToggle) startHumanSimulation();
             } else {
                 btn.classList.remove('active');
                 icon.className = 'fas fa-user-slash';
                 text.textContent = 'Manual';
                 stopHumanSimulation();
-                logActivity('system', 'Human simulation disabled');
             }
         }
+
+
+        // --- Portal Navigation and State Functions ---
 
         function showError() {
             const iframe = document.getElementById('modalIframe');
@@ -955,7 +695,6 @@
 
             updateSiteInfo();
 
-            // Clear the source immediately to force a reload and prevent visual flickering
             iframe.src = 'about:blank'; 
 
             setTimeout(() => {
@@ -964,158 +703,133 @@
             }, 200);
 
             iframe.onload = () => {
-                spinner.style.display = 'none';
-                iframe.classList.remove('loading');
                 isLoading = false;
-
+                iframe.classList.remove('loading');
+                spinner.style.display = 'none';
+                
+                // If human simulation is enabled, start the action loop
                 if (humanSimulationEnabled) {
                     startHumanSimulation();
                 }
-
-                logActivity('system', `Loaded ${links[index]}`);
+                // Check if the iframe content loaded successfully (best effort)
+                let hostname = 'Unknown';
+                try {
+                    hostname = new URL(links[index]).hostname;
+                } catch {}
+                logActivity('system', `Loaded: ${hostname}`);
             };
 
-            iframe.onerror = () => {
-                showError();
-            };
-
-            // Add a timeout check to detect iframe loading failure
-            const timeoutId = setTimeout(() => {
+            // Timeout check for blocked content
+            setTimeout(() => {
                 if (isLoading) {
-                    showError();
-                    logActivity('system', 'Error: Load timeout or cross-origin block detected');
+                    // Check if the iframe content loaded successfully (best effort)
+                    try {
+                        // Attempt a read that would fail on cross-origin block
+                        if (iframe.contentWindow && iframe.contentWindow.document && iframe.contentWindow.document.body.innerHTML === '') {
+                            throw new Error('Content blocked or empty.');
+                        }
+                        // If no error, we assume it eventually loaded, or is just slow
+                        iframe.onload(); 
+                    } catch (e) {
+                        // Cross-origin error indicates embedding is blocked
+                        showError();
+                        logActivity('system', 'ERROR: Embedding Blocked');
+                    }
                 }
-            }, 8000); // 8-second timeout
-
-            iframe.addEventListener('load', () => {
-                clearTimeout(timeoutId);
-            }, { once: true });
-
-            // Clear and restart auto-navigate interval
-            clearInterval(autoNavigateInterval);
-            autoNavigateInterval = setInterval(() => {
-                navigate(1);
-            }, Math.floor(Math.random() * (60000 - 30000 + 1) + 30000)); // 30-60 seconds between navigations
+            }, 8000); 
         }
+
 
         function navigate(direction) {
             if (isLoading) return;
+            
+            stopHumanSimulation();
 
-            currentIndex = (currentIndex + direction + links.length) % links.length;
-            logActivity('system', `Navigating to index ${currentIndex}`);
+            currentIndex = (currentIndex + direction) % links.length;
+            if (currentIndex < 0) {
+                currentIndex = links.length - 1;
+            }
+
             showLink(currentIndex);
+            logActivity('system', `Navigating to site ${currentIndex + 1}/${links.length}`);
         }
 
         function goToSite() {
-            try {
-                window.open(links[currentIndex], '_blank', 'noopener,noreferrer');
-                logActivity('system', 'Opened site in new tab');
-            } catch (error) {
-                window.location.href = links[currentIndex];
-                logActivity('system', 'Navigated directly to site');
+            const currentSite = links[currentIndex];
+            if (currentSite) {
+                window.open(currentSite, '_blank');
+                logActivity('system', `Opened ${new URL(currentSite).hostname} in new tab`);
             }
         }
-
+        
         function closeModal() {
-            const modal = document.getElementById('myModal');
-            const iframe = document.getElementById('modalIframe');
-            const fallback = document.getElementById('fallback');
-
+            document.getElementById('myModal').classList.remove('show');
+            document.getElementById('fallback').style.display = 'flex';
             stopHumanSimulation();
-
-            modal.classList.remove('show');
-            setTimeout(() => {
-                modal.style.display = 'none';
-                iframe.src = '';
-                fallback.style.display = 'flex';
-                hideError();
-            }, 300);
-
-            clearInterval(autoNavigateInterval);
-            isLoading = false;
             logActivity('system', 'Portal closed');
         }
-
+        
         function reopenModal() {
             document.getElementById('fallback').style.display = 'none';
-            document.getElementById('myModal').style.display = 'flex';
             showLink(currentIndex);
+            logActivity('system', 'Portal entered');
         }
 
-        // --- Initialization and Event Listeners ---
+        function showFallback() {
+            document.getElementById('fallback').style.display = 'flex';
+        }
 
-        // Enhanced keyboard navigation
+        // --- Initialization and Automation ---
+
+        function init() {
+            // Randomize the link order for natural rotation
+            shuffleArray(links); 
+            currentIndex = 0; 
+            
+            // Initialize the UI state for the human simulation button
+            toggleHumanSimulation(false); 
+            showFallback();
+
+            // Requirement 2: Automatic Enter Press to open portal
+            // We wrap this in a brief timeout to ensure the main page finishes rendering first.
+            setTimeout(launchAdsAndOpenPortal, 1000); // Wait 1 second before auto-entering
+        }
+        
+        // Keyboard shortcuts for manual control/debugging
         document.addEventListener('keydown', (e) => {
-            if (isLoading) return;
-
-            const modal = document.getElementById('myModal');
-            const isModalOpen = modal.classList.contains('show');
-
-            if (!isModalOpen) {
-                if (e.key === 'Enter') {
-                    reopenModal();
-                    e.preventDefault();
-                }
+            const modalIsVisible = document.getElementById('myModal').classList.contains('show');
+            
+            if (!modalIsVisible && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault();
+                launchAdsAndOpenPortal();
                 return;
             }
-
-            switch(e.key) {
-                case 'ArrowLeft':
-                case 'a':
-                case 'A':
-                    navigate(-1);
-                    break;
-                case 'ArrowRight':
-                case 'd':
-                case 'D':
-                    navigate(1);
-                    break;
-                case 'Escape':
-                    closeModal();
-                    break;
-                case ' ': // Spacebar to toggle simulation
-                    e.preventDefault();
-                    toggleHumanSimulation();
-                    break;
-                case 'g': // 'g' for Go to Site
-                case 'G':
-                    goToSite();
-                    break;
-                // Simulation shortcuts
-                case 's':
-                case 'S':
-                    simulateScroll();
-                    break;
-                case 'c':
-                case 'C':
-                    simulateClick();
-                    break;
-                case 'm':
-                case 'M':
-                    simulateMove();
-                    break;
-                default:
-                    break;
-            }
-        });
-
-        // Initial setup
-        document.addEventListener('DOMContentLoaded', () => {
-            shuffleArray(links); // Randomize link order on load
-            // Only show fallback initially, the user must click to "Enter Portal"
-            document.getElementById('myModal').style.display = 'none';
-            document.getElementById('fallback').style.display = 'flex';
             
-            // Initial state for the simulation toggle button
-            if (humanSimulationEnabled) {
-                document.getElementById('humanBtn').classList.add('active');
-                document.getElementById('humanIcon').className = 'fas fa-user';
-                document.getElementById('humanText').textContent = 'Human';
-            } else {
-                document.getElementById('humanIcon').className = 'fas fa-user-slash';
-                document.getElementById('humanText').textContent = 'Manual';
+            if (modalIsVisible) {
+                switch (e.key) {
+                    case 'ArrowLeft':
+                    case 'a':
+                    case 'A':
+                        navigate(-1);
+                        break;
+                    case 'ArrowRight': 
+                    case 'd':
+                    case 'D':
+                        navigate(1);
+                        break;
+                    case 'g':
+                    case 'G':
+                        goToSite();
+                        break;
+                    case ' ': // Spacebar to toggle simulation
+                        e.preventDefault();
+                        toggleHumanSimulation();
+                        break;
+                }
             }
         });
+
+        init();
     </script>
 </body>
 </html>
