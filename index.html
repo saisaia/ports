@@ -461,8 +461,8 @@
                 </div>
             </div>
             <div>
-                 <button class="btn" id="settingsBtn" title="Settings"><i class="fas fa-cog"></i></button>
-                 <button class="btn go-btn" id="closeBtn" title="Close Portal"><i class="fas fa-times"></i></button>
+                   <button class="btn" id="settingsBtn" title="Settings"><i class="fas fa-cog"></i></button>
+                   <button class="btn go-btn" id="closeBtn" title="Close Portal"><i class="fas fa-times"></i></button>
             </div>
         </div>
         
@@ -511,9 +511,9 @@
         
         <h3><i class="fas fa-list"></i> Link Management</h3>
         <div class="form-group">
-             <label for="newLinkInput">Add New URL</label>
-             <input type="url" id="newLinkInput" placeholder="https://example.com">
-             <button class="btn go-btn" id="addLinkBtn" style="width: 100%; margin-top: 0.5rem;">Add Link</button>
+              <label for="newLinkInput">Add New URL</label>
+              <input type="url" id="newLinkInput" placeholder="https://example.com">
+              <button class="btn go-btn" id="addLinkBtn" style="width: 100%; margin-top: 0.5rem;">Add Link</button>
         </div>
         <ul id="linkList"></ul>
         <button class="btn" id="closeSettingsBtn" style="margin-top: auto;">Close Settings</button>
@@ -835,120 +835,181 @@
     
     function simulateHumanBehavior() {
         if (!state.humanSimulationEnabled || state.isLoading) return;
+        
+        // Weighted array of possible actions
         const actions = [
             { action: simulateMouseMovement, weight: 50 },
             { action: simulateClick, weight: 30 },
-            { action: simulateScrolling, weight: 20 }
+            { action: simulateScroll, weight: 20 }
         ];
-        const randomAction = getWeightedRandom(actions);
-        randomAction.action();
-    }
-    
-    function simulateMouseMovement() {
-        const rect = dom.iframe.getBoundingClientRect();
-        const x = Math.random() * rect.width;
-        const y = Math.random() * rect.height;
-        
-        dom.simCursor.classList.add('active');
-        dom.statusItems.move.classList.add('active');
-        dom.simCursor.style.left = `${x}px`;
-        dom.simCursor.style.top = `${y}px`;
-        
-        logActivity('move', `Moved to (${Math.floor(x)}, ${Math.floor(y)})`);
-        setTimeout(() => dom.statusItems.move.classList.remove('active'), 2000);
-    }
 
-    function simulateClick() {
-        simulateMouseMovement(); // Move first
-        setTimeout(() => {
-            dom.simCursor.classList.add('clicking');
-            dom.statusItems.click.classList.add('active');
-            logActivity('click', 'Clicked at cursor');
-            setTimeout(() => {
-                dom.simCursor.classList.remove('clicking');
-                dom.statusItems.click.classList.remove('active');
-            }, 300);
-        }, 1200); // Wait for mouse to move
-    }
+        // Simple weighted random selection
+        const totalWeight = actions.reduce((sum, item) => sum + item.weight, 0);
+        let randomNum = Math.random() * totalWeight;
 
-    function simulateScrolling() {
-        dom.statusItems.scroll.classList.add('active');
-        logActivity('scroll', `Scrolled viewport`);
-        setTimeout(() => dom.statusItems.scroll.classList.remove('active'), 2000);
-    }
-
-    // --- ACTIVITY LOG ---
-    let activityLogData = [];
-    function logActivity(type, description) {
-        activityLogData.unshift({ type, description, timestamp: Date.now() });
-        if (activityLogData.length > 5) activityLogData.pop();
-        
-        const iconMap = {
-            scroll: 'fa-scroll', click: 'fa-mouse-pointer', move: 'fa-mouse', system: 'fa-info-circle'
-        };
-        
-        dom.activityLog.innerHTML = activityLogData.map(act => `
-            <div class="activity-item">
-                <i class="fas ${iconMap[act.type] || 'fa-circle'}"></i>
-                <span>${act.description}</span>
-            </div>
-        `).join('');
-
-        dom.activityLog.classList.add('show');
-        clearTimeout(state.timers.activityLog);
-        state.timers.activityLog = setTimeout(() => {
-            dom.activityLog.classList.remove('show');
-        }, 5000);
-    }
-
-    // --- UTILITIES ---
-
-    /**
-     * Shuffles array in place.
-     * @param {Array} a items An array containing the items.
-     */
-    function shuffleArray(a) {
-        for (let i = a.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [a[i], a[j]] = [a[j], a[i]];
+        for (const item of actions) {
+            if (randomNum < item.weight) {
+                item.action();
+                break;
+            }
+            randomNum -= item.weight;
         }
     }
+    
+    /**
+     * Simulates a smooth scroll action (visual effect only due to iframe restrictions).
+     */
+    function simulateScroll() {
+        const duration = Math.random() * 1500 + 1000; // 1-2.5 seconds
+        const direction = Math.random() > 0.5 ? 1 : -1;
+        const distance = Math.floor(Math.random() * 500) * direction;
+
+        logActivity('scroll', `Scrolling ${direction > 0 ? 'down' : 'up'} by ${Math.abs(distance)}px`);
+        dom.statusItems.scroll.classList.add('active');
+
+        // Visual simulation only, by slightly shifting the iframe content
+        dom.iframe.style.transition = `transform ${duration / 1000}s ease-in-out`;
+        dom.iframe.style.transform = `translateY(${distance * -0.1}px)`; // Slight visual shift
+
+        setTimeout(() => {
+            dom.iframe.style.transition = 'transform 0.5s ease';
+            dom.iframe.style.transform = 'translateY(0)'; // Reset quickly
+            dom.statusItems.scroll.classList.remove('active');
+        }, duration + 500);
+    }
+    
+    /**
+     * Simulates mouse movement to a random point within the iframe area.
+     */
+    function simulateMouseMovement() {
+        const rect = dom.iframe.getBoundingClientRect();
+        // Target an area within the bounds
+        const targetX = Math.random() * rect.width;
+        const targetY = Math.random() * rect.height;
+        
+        logActivity('mouse', `Moving to (${Math.round(targetX)}, ${Math.round(targetY)})`);
+        dom.statusItems.move.classList.add('active');
+
+        // Set cursor position and make it visible
+        dom.simCursor.style.transitionDuration = `${Math.random() * 1 + 0.5}s`;
+        dom.simCursor.style.left = `${targetX}px`;
+        dom.simCursor.style.top = `${targetY}px`;
+        dom.simCursor.classList.add('active');
+
+        setTimeout(() => {
+            dom.statusItems.move.classList.remove('active');
+        }, 1500);
+    }
+    
+    /**
+     * Simulates a click action at a random spot.
+     */
+    function simulateClick() {
+        const rect = dom.iframe.getBoundingClientRect();
+        // Aim for a random center-ish area
+        const targetX = rect.width * (0.3 + Math.random() * 0.4);
+        const targetY = rect.height * (0.3 + Math.random() * 0.4);
+        
+        logActivity('click', `Clicking at screen position`);
+        dom.statusItems.click.classList.add('active');
+
+        // 1. Move cursor to target
+        dom.simCursor.style.transitionDuration = '0.5s';
+        dom.simCursor.style.left = `${targetX}px`;
+        dom.simCursor.style.top = `${targetY}px`;
+        dom.simCursor.classList.add('active');
+
+        // 2. Perform the click animation
+        setTimeout(() => {
+            dom.simCursor.classList.add('clicking');
+            
+            // Fire a synthetic click event on the iframe (for appearance/potential use)
+            const event = new MouseEvent('click', {
+                view: window,
+                bubbles: true,
+                cancelable: true,
+                clientX: targetX + rect.left,
+                clientY: targetY + rect.top
+            });
+            dom.iframe.dispatchEvent(event);
+        }, 500);
+
+        // 3. Clean up
+        setTimeout(() => {
+            dom.simCursor.classList.remove('clicking');
+            dom.statusItems.click.classList.remove('active');
+        }, 600);
+    }
 
     /**
-     * Gets the hostname from a full URL.
-     * @param {string} url The URL string.
-     * @returns {string} The hostname.
+     * Clears all running application timers.
+     */
+    function clearAllTimers() {
+        clearTimeout(state.timers.autoNavigate);
+        clearTimeout(state.timers.loadingTimeout);
+        clearInterval(state.timers.simulation);
+        state.timers.autoNavigate = null;
+        state.timers.loadingTimeout = null;
+        state.timers.simulation = null;
+    }
+
+    /**
+     * Extracts the hostname from a full URL.
      */
     function getHostname(url) {
         try {
-            // Using a temporary anchor element is a classic way to parse URLs in older environments, 
-            // but the URL constructor is preferred in modern JS.
-            return new URL(url).hostname.replace('www.', '');
+            return new URL(url).hostname;
         } catch (e) {
-            return 'Invalid URL';
+            return "Invalid URL";
+        }
+    }
+    
+    /**
+     * Shuffles an array in place (Fisher-Yates).
+     */
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
         }
     }
 
     /**
-     * Gets a random item based on weights.
-     * @param {Array<{action: Function, weight: number}>} items
-     * @returns {Object} The randomly selected item.
+     * Logs activity to the on-screen log.
      */
-    function getWeightedRandom(items) {
-        const totalWeight = items.reduce((sum, item) => sum + item.weight, 0);
-        let random = Math.random() * totalWeight;
-        for (let i = 0; i < items.length; i++) {
-            if (random < items[i].weight) {
-                return items[i];
-            }
-            random -= items[i].weight;
+    function logActivity(type, message) {
+        const iconMap = {
+            system: 'fa-microchip',
+            scroll: 'fa-scroll',
+            click: 'fa-mouse-pointer',
+            mouse: 'fa-mouse'
+        };
+        
+        const item = document.createElement('div');
+        item.className = 'activity-item';
+        item.innerHTML = `<i class="fas ${iconMap[type] || 'fa-info-circle'}"></i> ${message}`;
+        
+        // Prepend to keep latest on top
+        if (dom.activityLog.firstChild) {
+            dom.activityLog.insertBefore(item, dom.activityLog.firstChild);
+        } else {
+            dom.activityLog.appendChild(item);
         }
-    }
+        
+        // Keep log tidy (max 10 items)
+        while (dom.activityLog.children.length > 10) {
+            dom.activityLog.removeChild(dom.activityLog.lastChild);
+        }
 
-    // --- SETTINGS AND LINK MANAGEMENT ---
+        // Show log briefly
+        dom.activityLog.classList.add('show');
+        clearTimeout(state.timers.activityLog);
+        state.timers.activityLog = setTimeout(() => dom.activityLog.classList.remove('show'), 3000);
+    }
 
     function openSettingsPanel() {
         dom.settingsPanel.classList.add('open');
+        renderLinkList();
     }
 
     function closeSettingsPanel() {
@@ -956,81 +1017,77 @@
         saveState();
     }
 
-    function updateSettings() {
-        const interval = parseInt(dom.autoNavIntervalInput.value);
-        if (interval >= 10 && interval <= 300) {
-            state.settings.autoNavInterval = interval;
-            // Only restart the timer if the modal is currently active
-            if (dom.modal.classList.contains('show')) {
-                startAutoNavigateTimer(); 
-            }
-            showToast(`Auto-navigate set to ${interval} seconds.`, 'success');
-        } else {
-            dom.autoNavIntervalInput.value = state.settings.autoNavInterval;
-            showToast("Interval must be between 10 and 300 seconds.", 'error');
-        }
-    }
-
-    function isValidUrl(string) {
-        try {
-            new URL(string);
-            return true;
-        } catch (e) {
-            return false;
-        }
-    }
-
     function addLink() {
-        const newUrl = dom.newLinkInput.value.trim();
-        if (isValidUrl(newUrl)) {
-            state.links.push(newUrl);
+        const url = dom.newLinkInput.value.trim();
+        if (url === '') {
+            showToast("URL cannot be empty.", "error");
+            return;
+        }
+        const prefixedUrl = url.startsWith('http') ? url : `https://${url}`;
+
+        if (!state.links.includes(prefixedUrl)) {
+            state.links.push(prefixedUrl);
             dom.newLinkInput.value = '';
             renderLinkList();
             saveState();
-            if (state.links.length === 1) {
-                // If this was the first link, navigate to it
-                state.currentIndex = 0;
-                showLink(state.currentIndex);
-            }
+            showToast(`Added link: ${getHostname(prefixedUrl)}`);
         } else {
-            showToast("Please enter a valid URL.", 'error');
+            showToast("Link already exists.", "error");
         }
     }
 
     function deleteLink(index) {
-        state.links.splice(index, 1);
+        const deletedLink = state.links.splice(index, 1)[0];
         if (state.currentIndex >= state.links.length) {
-            state.currentIndex = Math.max(0, state.links.length - 1);
+            state.currentIndex = 0; // Reset index if current link was deleted
         }
         renderLinkList();
         saveState();
-        if (state.links.length === 0) {
-            closeModal();
-            showToast("All links removed. Portal closed.", "error");
-        } else {
-            showLink(state.currentIndex);
-        }
+        showToast(`Removed link: ${getHostname(deletedLink)}`);
+        // Reload if the currently displayed site was deleted
+        if (!state.isLoading && state.links.length > 0) showLink(state.currentIndex);
+        else if (state.links.length === 0) closeModal();
     }
 
-    function handleLinkListClick(event) {
-        if (event.target.classList.contains('delete-link-btn')) {
-            const index = parseInt(event.target.closest('li').dataset.index);
-            deleteLink(index);
+    function handleLinkListClick(e) {
+        if (e.target.classList.contains('delete-link-btn')) {
+            const index = parseInt(e.target.dataset.index);
+            if (!isNaN(index)) deleteLink(index);
         }
     }
 
     function renderLinkList() {
-        dom.linkList.innerHTML = state.links.map((link, index) => `
-            <li data-index="${index}">
+        dom.linkList.innerHTML = '';
+        if (state.links.length === 0) {
+            dom.linkList.innerHTML = '<li style="color:var(--secondary-accent); opacity:0.7;">No links added yet.</li>';
+            return;
+        }
+        state.links.forEach((link, index) => {
+            const li = document.createElement('li');
+            li.innerHTML = `
                 <span>${getHostname(link)}</span>
-                <button class="delete-link-btn" title="Remove Link"><i class="fas fa-trash"></i></button>
-            </li>
-        `).join('');
+                <button class="delete-link-btn" data-index="${index}"><i class="fas fa-trash-alt"></i></button>
+            `;
+            dom.linkList.appendChild(li);
+        });
     }
-
-    // --- KEYBOARD HANDLING ---
+    
+    function updateSettings(e) {
+        const value = parseInt(e.target.value);
+        if (e.target.id === 'autoNavInterval' && !isNaN(value) && value >= 10 && value <= 300) {
+            state.settings.autoNavInterval = value;
+            showToast(`Auto-nav delay set to ${value} seconds.`);
+            saveState();
+            startAutoNavigateTimer(); // Restart timer with new value
+        } else if (e.target.id === 'autoNavInterval') {
+            showToast("Interval must be between 10 and 300 seconds.", "error");
+            dom.autoNavIntervalInput.value = state.settings.autoNavInterval; // Reset input field
+        }
+    }
+    
+    // --- KEYBOARD HANDLER ---
     function handleKeyPress(e) {
-        if (dom.settingsPanel.classList.contains('open')) return;
+        if (dom.settingsPanel.classList.contains('open')) return; // Ignore keys if settings open
 
         switch (e.key) {
             case 'ArrowLeft':
@@ -1042,49 +1099,19 @@
             case 'Enter':
                 goToSite();
                 break;
+            case 'Escape':
+                closeModal();
+                break;
             case 'h':
             case 'H':
                 toggleHumanSimulation();
                 break;
-            case 'Escape':
-                if (dom.modal.classList.contains('show')) {
-                    closeModal();
-                } else {
-                    reopenModal();
-                }
-                break;
         }
     }
-
-    // --- CLEANUP ---
-    function clearAllTimers() {
-        // Clear all named timers in the state
-        Object.values(state.timers).forEach(timer => {
-            if (timer) clearTimeout(timer);
-            if (timer) clearInterval(timer);
-        });
-        
-        // Re-initialize state timers to null
-        state.timers = {
-            autoNavigate: null,
-            simulation: null,
-            activityLog: null,
-            loadingTimeout: null,
-        };
-        
-        // Reset progress bar animation
-        dom.navProgressBar.style.transition = 'none';
-        dom.navProgressBar.style.width = '0%';
-        
-        // Stop cursor and status indicators
-        dom.simCursor.classList.remove('active');
-        Object.values(dom.statusItems).forEach(item => item.classList.remove('active'));
-    }
-
+    
     // --- INITIALIZATION ---
-    window.onload = init;
-
-})(); // End of IIFE
+    window.addEventListener('load', init);
+})();
 </script>
 </body>
 </html>
