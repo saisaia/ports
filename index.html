@@ -443,7 +443,16 @@
         @media (max-width: 768px) {
             .modal-header, .nav-buttons { padding: 0.75rem 1rem; }
             .modal-header { flex-direction: column; gap: 0.5rem; }
-            .site-info { position: static; transform: none; text-align: center; width: 100%; margin-bottom: 0.5rem; }
+            .site-info { 
+                position: static; 
+                transform: none; 
+                text-align: center; 
+                width: 100%; 
+                margin-bottom: 0.5rem; 
+            }
+            .settings-panel {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -461,13 +470,14 @@
                 </div>
             </div>
             <div>
-                   <button class="btn" id="settingsBtn" title="Settings"><i class="fas fa-cog"></i></button>
-                   <button class="btn go-btn" id="closeBtn" title="Close Portal"><i class="fas fa-times"></i></button>
+                   <button class="btn" id="settingsBtn" title="Settings (S)"><i class="fas fa-cog"></i></button>
+                   <button class="btn go-btn" id="closeBtn" title="Close Portal (Esc)"><i class="fas fa-times"></i></button>
             </div>
         </div>
         
         <div class="content-container">
             <div class="spinner" id="spinner"></div>
+            <!-- sandbox attribute prevents cross-site scripting and restricts certain functionalities -->
             <iframe id="modalIframe" src="" sandbox="allow-scripts allow-same-origin allow-forms allow-downloads" title="Portal Content"></iframe>
             <div class="interaction-overlay">
                 <div class="sim-cursor" id="simCursor"></div>
@@ -608,7 +618,7 @@
     }
 
     /**
-     * Caches references to all necessary DOM elements.
+     * Binds event listeners to all interactive elements.
      */
     function bindEventListeners() {
         // Main controls
@@ -644,10 +654,11 @@
         const savedLinks = localStorage.getItem('portalLinks');
         const savedSettings = localStorage.getItem('portalSettings');
         
+        // Load links or use defaults if none are saved
         state.links = savedLinks ? JSON.parse(savedLinks) : [
-            'https://www.youtube.com/',
-            'https://www.google.com/',
-            'https://www.reddit.com/r/all/'
+            'https://www.google.com/search?q=latest+news',
+            'https://www.wikipedia.org/wiki/Main_Page',
+            'https://www.reddit.com/r/popular/'
         ];
         
         if (savedSettings) {
@@ -702,7 +713,7 @@
         state.timers.loadingTimeout = setTimeout(() => {
             if (state.isLoading) {
                 showError();
-                logActivity('system', `Error: ${state.links[state.currentIndex]} timed out`);
+                logActivity('system', `Error: ${state.links[state.currentIndex]} timed out or was blocked.`);
             }
         }, 15000); // 15 second timeout
 
@@ -776,196 +787,52 @@
         dom.currentSite.textContent = getHostname(state.links[state.currentIndex]);
     }
 
+    /**
+     * Starts the auto-navigation timer and animates the progress bar.
+     */
     function startAutoNavigateTimer() {
         clearTimeout(state.timers.autoNavigate);
         
         dom.navProgressBar.style.transition = 'none';
         dom.navProgressBar.style.width = '0%';
         
-        // Force a reflow to restart the animation
-        void dom.navProgressBar.offsetWidth;
+        // Force a reflow before starting the transition
+        dom.navProgressBar.offsetHeight; 
         
-        dom.navProgressBar.style.transition = `width ${state.settings.autoNavInterval}s linear`;
+        const delayMs = state.settings.autoNavInterval * 1000;
+        
+        dom.navProgressBar.style.transition = `width ${delayMs}ms linear`;
         dom.navProgressBar.style.width = '100%';
-
-        state.timers.autoNavigate = setTimeout(() => navigate(1), state.settings.autoNavInterval * 1000);
-    }
-    
-    /**
-     * Creates and displays a toast notification.
-     * @param {string} message The message to display.
-     * @param {string} type 'success' or 'error'.
-     */
-    function showToast(message, type = 'success') {
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
-        toast.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
-        dom.toastContainer.appendChild(toast);
-        setTimeout(() => toast.remove(), 5000);
-    }
-
-    // --- HUMAN SIMULATION ---
-    function toggleHumanSimulation() {
-        state.humanSimulationEnabled = !state.humanSimulationEnabled;
-        dom.humanBtn.classList.toggle('active', state.humanSimulationEnabled);
-        dom.humanIcon.className = state.humanSimulationEnabled ? 'fas fa-user' : 'fas fa-user-slash';
-        dom.humanText.textContent = state.humanSimulationEnabled ? 'Human' : 'Manual';
         
-        if (state.humanSimulationEnabled) {
-            startHumanSimulation();
-            logActivity('system', 'Simulation enabled');
-        } else {
-            stopHumanSimulation();
-            logActivity('system', 'Simulation disabled');
-        }
-    }
-
-    function startHumanSimulation() {
-        if (state.timers.simulation) clearInterval(state.timers.simulation);
-        state.timers.simulation = setInterval(simulateHumanBehavior, Math.random() * 5000 + 4000); // 4-9 seconds
-    }
-
-    function stopHumanSimulation() {
-        clearInterval(state.timers.simulation);
-        state.timers.simulation = null;
-        dom.simCursor.classList.remove('active');
-        Object.values(dom.statusItems).forEach(item => item.classList.remove('active'));
-    }
-    
-    function simulateHumanBehavior() {
-        if (!state.humanSimulationEnabled || state.isLoading) return;
-        
-        // Weighted array of possible actions
-        const actions = [
-            { action: simulateMouseMovement, weight: 50 },
-            { action: simulateClick, weight: 30 },
-            { action: simulateScroll, weight: 20 }
-        ];
-
-        // Simple weighted random selection
-        const totalWeight = actions.reduce((sum, item) => sum + item.weight, 0);
-        let randomNum = Math.random() * totalWeight;
-
-        for (const item of actions) {
-            if (randomNum < item.weight) {
-                item.action();
-                break;
-            }
-            randomNum -= item.weight;
-        }
+        state.timers.autoNavigate = setTimeout(() => {
+            logActivity('system', 'Auto-navigating to the next site.');
+            navigate(1);
+        }, delayMs);
     }
     
     /**
-     * Simulates a smooth scroll action (visual effect only due to iframe restrictions).
-     */
-    function simulateScroll() {
-        const duration = Math.random() * 1500 + 1000; // 1-2.5 seconds
-        const direction = Math.random() > 0.5 ? 1 : -1;
-        const distance = Math.floor(Math.random() * 500) * direction;
-
-        logActivity('scroll', `Scrolling ${direction > 0 ? 'down' : 'up'} by ${Math.abs(distance)}px`);
-        dom.statusItems.scroll.classList.add('active');
-
-        // Visual simulation only, by slightly shifting the iframe content
-        dom.iframe.style.transition = `transform ${duration / 1000}s ease-in-out`;
-        dom.iframe.style.transform = `translateY(${distance * -0.1}px)`; // Slight visual shift
-
-        setTimeout(() => {
-            dom.iframe.style.transition = 'transform 0.5s ease';
-            dom.iframe.style.transform = 'translateY(0)'; // Reset quickly
-            dom.statusItems.scroll.classList.remove('active');
-        }, duration + 500);
-    }
-    
-    /**
-     * Simulates mouse movement to a random point within the iframe area.
-     */
-    function simulateMouseMovement() {
-        const rect = dom.iframe.getBoundingClientRect();
-        // Target an area within the bounds
-        const targetX = Math.random() * rect.width;
-        const targetY = Math.random() * rect.height;
-        
-        logActivity('mouse', `Moving to (${Math.round(targetX)}, ${Math.round(targetY)})`);
-        dom.statusItems.move.classList.add('active');
-
-        // Set cursor position and make it visible
-        dom.simCursor.style.transitionDuration = `${Math.random() * 1 + 0.5}s`;
-        dom.simCursor.style.left = `${targetX}px`;
-        dom.simCursor.style.top = `${targetY}px`;
-        dom.simCursor.classList.add('active');
-
-        setTimeout(() => {
-            dom.statusItems.move.classList.remove('active');
-        }, 1500);
-    }
-    
-    /**
-     * Simulates a click action at a random spot.
-     */
-    function simulateClick() {
-        const rect = dom.iframe.getBoundingClientRect();
-        // Aim for a random center-ish area
-        const targetX = rect.width * (0.3 + Math.random() * 0.4);
-        const targetY = rect.height * (0.3 + Math.random() * 0.4);
-        
-        logActivity('click', `Clicking at screen position`);
-        dom.statusItems.click.classList.add('active');
-
-        // 1. Move cursor to target
-        dom.simCursor.style.transitionDuration = '0.5s';
-        dom.simCursor.style.left = `${targetX}px`;
-        dom.simCursor.style.top = `${targetY}px`;
-        dom.simCursor.classList.add('active');
-
-        // 2. Perform the click animation
-        setTimeout(() => {
-            dom.simCursor.classList.add('clicking');
-            
-            // Fire a synthetic click event on the iframe (for appearance/potential use)
-            const event = new MouseEvent('click', {
-                view: window,
-                bubbles: true,
-                cancelable: true,
-                clientX: targetX + rect.left,
-                clientY: targetY + rect.top
-            });
-            dom.iframe.dispatchEvent(event);
-        }, 500);
-
-        // 3. Clean up
-        setTimeout(() => {
-            dom.simCursor.classList.remove('clicking');
-            dom.statusItems.click.classList.remove('active');
-        }, 600);
-    }
-
-    /**
-     * Clears all running application timers.
+     * Clears all running timers (auto-navigate, simulation, loading).
      */
     function clearAllTimers() {
         clearTimeout(state.timers.autoNavigate);
+        clearTimeout(state.timers.simulation);
+        clearTimeout(state.timers.activityLog);
         clearTimeout(state.timers.loadingTimeout);
-        clearInterval(state.timers.simulation);
-        state.timers.autoNavigate = null;
-        state.timers.loadingTimeout = null;
-        state.timers.simulation = null;
-    }
-
-    /**
-     * Extracts the hostname from a full URL.
-     */
-    function getHostname(url) {
-        try {
-            return new URL(url).hostname;
-        } catch (e) {
-            return "Invalid URL";
-        }
+        
+        // Reset progress bar visually
+        dom.navProgressBar.style.transition = 'none';
+        dom.navProgressBar.style.width = '0%';
+        
+        // Reset status indicators
+        dom.statusItems.scroll.classList.remove('active');
+        dom.statusItems.click.classList.remove('active');
+        dom.statusItems.move.classList.remove('active');
     }
     
+    // --- UTILITIES ---
+
     /**
-     * Shuffles an array in place (Fisher-Yates).
+     * Shuffles an array in place (Fisher-Yates algorithm).
      */
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
@@ -973,144 +840,324 @@
             [array[i], array[j]] = [array[j], array[i]];
         }
     }
+    
+    /**
+     * Extracts the hostname from a full URL.
+     */
+    function getHostname(url) {
+        try {
+            return new URL(url).hostname.replace('www.', '');
+        } catch {
+            return 'Invalid URL';
+        }
+    }
+
+    // --- TOAST AND ACTIVITY LOGGING ---
 
     /**
-     * Logs activity to the on-screen log.
+     * Displays a temporary notification toast.
+     */
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        const iconClass = type === 'error' ? 'fas fa-exclamation-triangle' : 'fas fa-check-circle';
+        toast.innerHTML = `<i class="${iconClass}"></i><span>${message}</span>`;
+        
+        dom.toastContainer.appendChild(toast);
+
+        // Remove the toast after 5 seconds (matching CSS fadeOut animation)
+        setTimeout(() => {
+            toast.remove();
+        }, 5000); 
+    }
+    
+    /**
+     * Adds an activity message to the log overlay.
      */
     function logActivity(type, message) {
-        const iconMap = {
-            system: 'fa-microchip',
-            scroll: 'fa-scroll',
-            click: 'fa-mouse-pointer',
-            mouse: 'fa-mouse'
-        };
+        clearTimeout(state.timers.activityLog);
         
+        const icon = type === 'human' ? 'fas fa-user' : 'fas fa-robot';
         const item = document.createElement('div');
         item.className = 'activity-item';
-        item.innerHTML = `<i class="fas ${iconMap[type] || 'fa-info-circle'}"></i> ${message}`;
+        item.innerHTML = `<i class="${icon}"></i><span>${message}</span>`;
         
-        // Prepend to keep latest on top
-        if (dom.activityLog.firstChild) {
-            dom.activityLog.insertBefore(item, dom.activityLog.firstChild);
-        } else {
-            dom.activityLog.appendChild(item);
+        // Prepend new item
+        dom.activityLog.prepend(item);
+        
+        // Keep log clean (max 5 items)
+        while (dom.activityLog.children.length > 5) {
+            dom.activityLog.lastElementChild.remove();
         }
         
-        // Keep log tidy (max 10 items)
-        while (dom.activityLog.children.length > 10) {
-            dom.activityLog.removeChild(dom.activityLog.lastChild);
-        }
-
-        // Show log briefly
         dom.activityLog.classList.add('show');
-        clearTimeout(state.timers.activityLog);
-        state.timers.activityLog = setTimeout(() => dom.activityLog.classList.remove('show'), 3000);
+        
+        // Hide log after 5 seconds of inactivity
+        state.timers.activityLog = setTimeout(() => {
+            dom.activityLog.classList.remove('show');
+        }, 5000);
     }
-
-    function openSettingsPanel() {
-        dom.settingsPanel.classList.add('open');
-        renderLinkList();
-    }
-
-    function closeSettingsPanel() {
-        dom.settingsPanel.classList.remove('open');
-        saveState();
-    }
-
-    function addLink() {
-        const url = dom.newLinkInput.value.trim();
-        if (url === '') {
-            showToast("URL cannot be empty.", "error");
-            return;
-        }
-        const prefixedUrl = url.startsWith('http') ? url : `https://${url}`;
-
-        if (!state.links.includes(prefixedUrl)) {
-            state.links.push(prefixedUrl);
-            dom.newLinkInput.value = '';
-            renderLinkList();
-            saveState();
-            showToast(`Added link: ${getHostname(prefixedUrl)}`);
-        } else {
-            showToast("Link already exists.", "error");
-        }
-    }
-
-    function deleteLink(index) {
-        const deletedLink = state.links.splice(index, 1)[0];
-        if (state.currentIndex >= state.links.length) {
-            state.currentIndex = 0; // Reset index if current link was deleted
-        }
-        renderLinkList();
-        saveState();
-        showToast(`Removed link: ${getHostname(deletedLink)}`);
-        // Reload if the currently displayed site was deleted
-        if (!state.isLoading && state.links.length > 0) showLink(state.currentIndex);
-        else if (state.links.length === 0) closeModal();
-    }
-
-    function handleLinkListClick(e) {
-        if (e.target.classList.contains('delete-link-btn')) {
-            const index = parseInt(e.target.dataset.index);
-            if (!isNaN(index)) deleteLink(index);
-        }
-    }
-
+    
+    // --- SETTINGS AND LINK MANAGEMENT ---
+    
     function renderLinkList() {
         dom.linkList.innerHTML = '';
-        if (state.links.length === 0) {
-            dom.linkList.innerHTML = '<li style="color:var(--secondary-accent); opacity:0.7;">No links added yet.</li>';
-            return;
-        }
         state.links.forEach((link, index) => {
             const li = document.createElement('li');
             li.innerHTML = `
                 <span>${getHostname(link)}</span>
-                <button class="delete-link-btn" data-index="${index}"><i class="fas fa-trash-alt"></i></button>
+                <button class="delete-link-btn" data-index="${index}" title="Delete Link">
+                    <i class="fas fa-trash"></i>
+                </button>
             `;
             dom.linkList.appendChild(li);
         });
     }
-    
-    function updateSettings(e) {
-        const value = parseInt(e.target.value);
-        if (e.target.id === 'autoNavInterval' && !isNaN(value) && value >= 10 && value <= 300) {
-            state.settings.autoNavInterval = value;
-            showToast(`Auto-nav delay set to ${value} seconds.`);
-            saveState();
-            startAutoNavigateTimer(); // Restart timer with new value
-        } else if (e.target.id === 'autoNavInterval') {
-            showToast("Interval must be between 10 and 300 seconds.", "error");
-            dom.autoNavIntervalInput.value = state.settings.autoNavInterval; // Reset input field
+
+    function addLink() {
+        const url = dom.newLinkInput.value.trim();
+        if (url) {
+            // Basic URL validation and normalization
+            let normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
+            
+            try {
+                // Check if it's a valid URL before adding
+                new URL(normalizedUrl); 
+                state.links.push(normalizedUrl);
+                dom.newLinkInput.value = '';
+                saveState();
+                renderLinkList();
+                showToast(`Added: ${getHostname(normalizedUrl)}`, "success");
+            } catch {
+                showToast("Invalid URL format. Must start with http:// or https://", "error");
+            }
         }
     }
     
-    // --- KEYBOARD HANDLER ---
-    function handleKeyPress(e) {
-        if (dom.settingsPanel.classList.contains('open')) return; // Ignore keys if settings open
+    function handleLinkListClick(e) {
+        if (e.target.closest('.delete-link-btn')) {
+            const index = parseInt(e.target.closest('.delete-link-btn').dataset.index);
+            state.links.splice(index, 1);
+            saveState();
+            renderLinkList();
+            showToast("Link deleted.", "success");
+            
+            // Adjust current index if necessary
+            if (state.links.length > 0) {
+                state.currentIndex = Math.max(0, Math.min(state.currentIndex, state.links.length - 1));
+            } else {
+                 clearAllTimers();
+                 dom.iframe.src = 'about:blank';
+            }
+        }
+    }
 
-        switch (e.key) {
+    function updateSettings() {
+        const interval = parseInt(dom.autoNavIntervalInput.value);
+        if (interval >= 10 && interval <= 300) {
+            state.settings.autoNavInterval = interval;
+            saveState();
+            // Restart timer with new interval if active
+            if (!state.isLoading) {
+                 startAutoNavigateTimer();
+            }
+        } else {
+            showToast("Delay must be between 10 and 300 seconds.", "error");
+            dom.autoNavIntervalInput.value = state.settings.autoNavInterval; // Reset input
+        }
+    }
+
+    function openSettingsPanel() {
+        dom.settingsPanel.classList.add('open');
+    }
+
+    function closeSettingsPanel() {
+        dom.settingsPanel.classList.remove('open');
+        updateSettings(); // Ensure settings are saved and applied when closing
+    }
+    
+    // --- HUMAN SIMULATION LOGIC ---
+    
+    function toggleHumanSimulation() {
+        state.humanSimulationEnabled = !state.humanSimulationEnabled;
+        
+        dom.humanBtn.classList.toggle('active', state.humanSimulationEnabled);
+        dom.humanIcon.className = state.humanSimulationEnabled ? 'fas fa-user' : 'fas fa-user-slash';
+        dom.humanText.textContent = state.humanSimulationEnabled ? 'Human' : 'Manual';
+        
+        if (state.humanSimulationEnabled && !state.isLoading) {
+            startHumanSimulation();
+            showToast("Human simulation enabled.", "success");
+        } else {
+            stopHumanSimulation();
+            showToast("Human simulation disabled.", "info");
+        }
+    }
+
+    function startHumanSimulation() {
+        stopHumanSimulation(); // Clear any existing timer
+        
+        // Determine next action time (e.g., between 5 and 15 seconds)
+        const nextActionDelay = (Math.random() * 10 + 5) * 1000;
+        
+        state.timers.simulation = setTimeout(() => {
+            humanSimulateInteraction();
+            startHumanSimulation(); // Recursive call for continuous simulation
+        }, nextActionDelay);
+    }
+
+    function stopHumanSimulation() {
+        clearTimeout(state.timers.simulation);
+        dom.simCursor.classList.remove('active', 'clicking');
+        dom.statusItems.scroll.classList.remove('active');
+        dom.statusItems.click.classList.remove('active');
+        dom.statusItems.move.classList.remove('active');
+    }
+
+    function humanSimulateInteraction() {
+        // Stop simulation if loading or disabled
+        if (!state.humanSimulationEnabled || state.isLoading) return;
+        
+        // Randomly select an action
+        // Clicks are less frequent than scrolling or moving
+        const actions = ['move', 'move', 'scroll', 'scroll', 'click'];
+        const action = actions[Math.floor(Math.random() * actions.length)];
+        
+        logActivity('human', `Simulating ${action} action.`);
+        
+        // Update status indicator
+        Object.values(dom.statusItems).forEach(item => {
+             // Added defensive check (if item exists) for extra safety
+            if (item) {
+                item.classList.remove('active');
+            }
+        });
+        
+        // *** FIX APPLIED HERE: The key lookup was incorrect (action + 'Status'). 
+        // We now use the correct key: 'action' (e.g., dom.statusItems['scroll']). ***
+        const statusItemToActivate = dom.statusItems[action];
+        
+        // Added defensive check (if statusItemToActivate exists) to prevent TypeError
+        if (statusItemToActivate) {
+             statusItemToActivate.classList.add('active');
+        } else {
+            console.warn(`[GLOBAL] Warning: Simulation attempted to activate unknown status item for action: ${action}`);
+        }
+
+        // Execute simulation function
+        try {
+            switch(action) {
+                case 'move':
+                    simulateMouseMove();
+                    break;
+                case 'scroll':
+                    simulateScroll();
+                    break;
+                case 'click':
+                    simulateClick();
+                    break;
+            }
+        } catch (e) {
+            // This catches any unexpected errors during simulation, often due to iframe security
+            console.warn("Simulation interaction failed:", e);
+        }
+        
+        // Clean up status after a short period (except for cursor move, which is perpetual)
+        if (action !== 'move') {
+             setTimeout(() => {
+                const itemToDeactivate = dom.statusItems[action];
+                if (itemToDeactivate) { // Defensive check for deactivation
+                    itemToDeactivate.classList.remove('active');
+                }
+            }, 1000); // Remove status after 1 second
+        }
+    }
+    
+    /**
+     * Simulates mouse movement (updates the visual cursor).
+     */
+    function simulateMouseMove() {
+        dom.simCursor.classList.add('active');
+        
+        const containerRect = dom.iframe.getBoundingClientRect();
+        
+        // Target a random coordinate within the iframe container
+        const targetX = Math.random() * containerRect.width;
+        const targetY = Math.random() * containerRect.height;
+        
+        // Move the visible cursor with a smooth transition (CSS handles the smoothing)
+        dom.simCursor.style.left = `${targetX}px`;
+        dom.simCursor.style.top = `${targetY}px`;
+    }
+
+    /**
+     * Attempts to simulate a scroll event (only visual/log entry, as iframe scroll is blocked).
+     */
+    function simulateScroll() {
+        // Move cursor before "scrolling"
+        simulateMouseMove(); 
+    }
+
+    /**
+     * Simulates a mouse click (updates the visual cursor).
+     */
+    function simulateClick() {
+        // Move the cursor to a random location
+        simulateMouseMove();
+        
+        // Simulate click animation
+        dom.simCursor.classList.add('clicking');
+        
+        setTimeout(() => {
+            dom.simCursor.classList.remove('clicking');
+        }, 300); // Click animation time
+    }
+    
+    // --- KEYBOARD HANDLING ---
+    
+    function handleKeyPress(e) {
+        // Ignore key presses if settings panel is open
+        if (dom.settingsPanel.classList.contains('open')) return;
+        
+        // Prevent default browser behavior for navigation keys
+        switch(e.key) {
             case 'ArrowLeft':
+                e.preventDefault();
                 navigate(-1);
                 break;
             case 'ArrowRight':
+                e.preventDefault();
                 navigate(1);
                 break;
             case 'Enter':
-                goToSite();
-                break;
-            case 'Escape':
-                closeModal();
+                if (dom.modal.classList.contains('show')) {
+                    e.preventDefault();
+                    goToSite();
+                }
                 break;
             case 'h':
             case 'H':
+                e.preventDefault();
                 toggleHumanSimulation();
+                break;
+            case 'Escape':
+                if (dom.modal.classList.contains('show')) {
+                    e.preventDefault();
+                    closeModal();
+                }
+                break;
+            case 's':
+            case 'S':
+                e.preventDefault();
+                dom.settingsPanel.classList.contains('open') ? closeSettingsPanel() : openSettingsPanel();
                 break;
         }
     }
-    
+
     // --- INITIALIZATION ---
-    window.addEventListener('load', init);
+    window.onload = init;
+    
 })();
 </script>
 </body>
