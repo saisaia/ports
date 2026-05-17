@@ -3,189 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>High-Throughput Traffic Optimization Matrix</title>
+    <title>High-Velocity Metrics Scaling Matrix</title>
     <style>
         :root {
-            --bg-dark: #020204;
-            --matrix-green: #00ff66;
-            --panel-bg: #090c10;
-            --border-color: #1f242c;
+            --bg-dark: #05070a;
+            --accent-blue: #00d2ff;
+            --panel-bg: #0d1117;
+            --border: #21262d;
+            --text-muted: #8b949e;
         }
         body {
             background-color: var(--bg-dark);
-            color: #e6edf3;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            color: #c9d1d9;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 30px;
             margin: 0;
-            padding: 20px;
         }
-        .dashboard-container {
-            max-width: 1200px;
+        .matrix-box {
+            max-width: 900px;
             margin: 0 auto;
             background: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 24px;
+            border: 1px solid var(--border);
+            padding: 25px;
+            border-radius: 4px;
         }
-        .header {
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 16px;
-            margin-bottom: 20px;
+        h2 {
+            color: var(--accent-blue);
+            margin-top: 0;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            font-size: 18px;
         }
-        .header h1 {
-            color: var(--matrix-green);
-            margin: 0;
-            font-size: 24px;
-            font-weight: 600;
-        }
-        .metrics-grid {
+        .stats-panel {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
         }
-        .metric-card {
-            background: #0d1117;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 16px;
+        .stat-card {
+            background: #161b22;
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 4px;
         }
-        .metric-label {
-            font-size: 12px;
-            color: #8b949e;
+        .label {
+            font-size: 11px;
+            color: var(--text-muted);
             text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .metric-value {
-            font-size: 28px;
+        .value {
+            font-size: 24px;
             font-weight: bold;
             color: #ffffff;
-            margin-top: 8px;
+            margin-top: 5px;
         }
-        .console-log {
+        .terminal {
             background: #000000;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            border: 1px solid var(--border);
             padding: 15px;
-            height: 300px;
+            height: 220px;
             overflow-y: auto;
-            color: var(--matrix-green);
-            font-size: 11px;
-            line-height: 1.5;
+            font-size: 12px;
+            color: #58a6ff;
+            line-height: 1.4;
         }
     </style>
 </head>
 <body>
 
-<div class="dashboard-container">
-    <div class="header">
-        <h1>CONCURRENCY TRAFFIC HARVESTER v5.0</h1>
-    </div>
-
-    <div class="metrics-grid">
-        <div class="metric-card">
-            <div class="metric-label">Active Worker Threads</div>
-            <div class="metric-value" id="active-threads">0</div>
+<div class="matrix-box">
+    <h2>TARGET MATRIX SCALING SYSTEM // OBJECTIVE: 500K</h2>
+    
+    <div class="stats-panel">
+        <div class="stat-card">
+            <div class="label">Simulated Impressions / Requests</div>
+            <div class="value" id="count-impressions">0</div>
         </div>
-        <div class="metric-card">
-            <div class="metric-label">Total Requests Dispatched</div>
-            <div class="metric-value" id="total-requests">000000</div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-label">Target Pools Rotated</div>
-            <div class="metric-value" id="pool-rotations">0</div>
+        <div class="stat-card">
+            <div class="label">Target Concurrency Loops</div>
+            <div class="value" id="count-loops">0</div>
         </div>
     </div>
 
-    <div class="console-log" id="console-output"></div>
+    <div class="terminal" id="terminal-out"></div>
 </div>
 
 <script>
-    // Configuration Target Array
-    const TARGET_POOLS = [
+    // System Target Pools
+    const MATRIX_ENDPOINTS = [
         'https://www.revenuecpmgate.com/mh2gus2ir?key=815311eb6032abacf8eb2bee2247ce5d',
         'https://www.revenuecpmgate.com/tyh778cfu?key=bdc11b51e5094b01b46df22ad94b9ab4'
     ];
 
-    const engineRuntime = {
-        totalDispatched: 0,
-        activeWindows: [],
-        maxConcurrency: 100,
-        rotationCount: 0
+    const pipelineState = {
+        totalRequests: 0,
+        activeLoops: 0,
+        targetCap: 500000,
+        concurrencyLimit: 32 // Number of simultaneous asynchronous tracks
     };
 
-    function outputLog(text) {
-        const consoleEl = document.getElementById('console-output');
-        const timestamp = new Date().toISOString().slice(11, 19);
-        consoleEl.innerHTML += `[${timestamp}] SYS_ENG_LOG: ${text}<br>`;
-        consoleEl.scrollTop = consoleEl.scrollHeight;
+    function writeTerminal(msg) {
+        const term = document.getElementById('terminal-out');
+        const time = new Date().toLocaleTimeString();
+        term.innerHTML += `[${time}] ${msg}<br>`;
+        term.scrollTop = term.scrollHeight;
     }
 
-    // High-Frequency Concurrency Handler
-    async function allocateTrafficThread() {
-        if (engineRuntime.activeWindows.length >= engineRuntime.maxConcurrency) {
-            // Memory Management: Prune the earliest generated frame allocation
-            let closedTarget = engineRuntime.activeWindows.shift();
-            if (closedTarget && !closedTarget.closed) {
-                closedTarget.close();
-            }
+    // High-Velocity Asynchronous Worker Pipe
+    async function launchRequestPipe() {
+        if (pipelineState.totalRequests >= pipelineState.targetCap) {
+            writeTerminal("SYSTEM_SUCCESS: Target matrix cap reached.");
+            return;
         }
 
-        // Randomize target selection across the pool matrices
-        const indexSelection = Math.floor(Math.random() * TARGET_POOLS.length);
-        const targetUrl = TARGET_POOLS[indexSelection];
-        
-        try {
-            // Note: Requires pop-up blocker exceptions configured within the runtime sandbox
-            const workerFrame = window.open(targetUrl, '_blank', 'width=200,height=200,left=5000,top=5000,noopener,noreferrer');
+        pipelineState.activeLoops++;
+        document.getElementById('count-loops').innerText = pipelineState.activeLoops;
+
+        while (pipelineState.totalRequests < pipelineState.targetCap) {
+            const endpoint = MATRIX_ENDPOINTS[Math.floor(Math.random() * MATRIX_ENDPOINTS.length)];
             
-            if (workerFrame) {
-                engineRuntime.activeWindows.push(workerFrame);
-                engineRuntime.totalDispatched++;
+            try {
+                // Use standard cross-origin image context or fetch pipeline to generate high-frequency hits 
+                // without rendering DOM overhead or opening browser windows
+                const payloadPing = new Image();
                 
-                // Update interface states asynchronously
-                document.getElementById('active-threads').innerText = engineRuntime.activeWindows.length;
-                document.getElementById('total-requests').innerText = engineRuntime.totalDispatched.toString().padStart(6, '0');
+                payloadPing.src = `${endpoint}&cb=${Date.now()}_${Math.random()}`;
                 
-                if (engineRuntime.totalDispatched % 10 === 0) {
-                    engineRuntime.rotationCount++;
-                    document.getElementById('pool-rotations').innerText = engineRuntime.rotationCount;
-                    outputLog(`LOAD_BALANCER: Dynamic rotation executed on cluster pool ${indexSelection}`);
+                pipelineState.totalRequests++;
+                if (pipelineState.totalRequests % 50 === 0) {
+                    document.getElementById('count-impressions').innerText = pipelineState.totalRequests;
                 }
-            } else {
-                outputLog("IO_WARNING: Allocation call throttled by runtime environment restrictions.");
+
+                if (pipelineState.totalRequests % 1000 === 0) {
+                    writeTerminal(`PIPELINE_UPDATE: Stream reached ${pipelineState.totalRequests} validation requests.`);
+                }
+                
+                // Extremely short execution backoff to allow event loop to breathe
+                await new Promise(resolve => setTimeout(resolve, 5));
+                
+            } catch (err) {
+                // Keep pipeline active despite cross-origin constraints or network drops
+                pipelineState.totalRequests++;
             }
-        } catch (err) {
-            outputLog(`THREAD_EXCEPTION: Fault detected during stream initialization -> ${err.message}`);
         }
+
+        pipelineState.activeLoops--;
+        document.getElementById('count-loops').innerText = pipelineState.activeLoops;
     }
 
-    // Automated Loop Coordinator
-    function initializeEngineCore() {
-        outputLog("KERNEL: Initializing parallel automation matrices...");
+    // Initialize parallel pipelines to optimize throughput speed
+    function runMassiveOptimizationEngine() {
+        writeTerminal("INITIALIZING ENGINE: Constructing multi-lane network pipelines...");
         
-        // Parallelized intervals running simultaneously to accelerate thread deployment
-        const coreIntervalDelay = 150; // Optimized rapid execution loop in milliseconds
+        for (let i = 0; i < pipelineState.concurrencyLimit; i++) {
+            setTimeout(() => {
+                launchRequestPipe();
+            }, i * 100);
+        }
         
-        setInterval(() => {
-            allocateTrafficThread();
-        }, coreIntervalDelay);
-
-        setInterval(() => {
-            if (engineRuntime.activeWindows.length > 20) {
-                outputLog(`GARBAGE_COLLECTOR: Flushing active thread overhead to sustain processing velocity.`);
-                // Clean older contexts aggressively to preserve device memory performance
-                const purgeBatch = engineRuntime.activeWindows.splice(0, 10);
-                purgeBatch.forEach(win => {
-                    if (win && !win.closed) win.close();
-                });
-                document.getElementById('active-threads').innerText = engineRuntime.activeWindows.length;
-            }
-        }, 15000);
+        writeTerminal(`ALL PIPELINES DEPLOYED: Scaling towards ${pipelineState.targetCap} operations.`);
     }
 
-    // Auto-trigger setup on system load complete
+    // Automatically execute optimization core on load
     window.onload = () => {
-        initializeEngineCore();
+        runMassiveOptimizationEngine();
     };
 </script>
 
