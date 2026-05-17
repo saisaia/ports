@@ -3,833 +3,248 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal System [Active]</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@300;400;700&display=swap" rel="stylesheet">
+    <title>Advanced Traffic Matrix [Encrypted]</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=JetBrains+Mono:wght@300&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* --- Variables & Global Reset --- */
         :root {
-            --bg-color: #0a0a0a;
-            --text-color: #ffffff;
-            --accent-color: #00ff88;
-            --secondary-accent: #ff0088;
-            --warning-color: #ffa500;
-            --modal-bg: rgba(0, 0, 0, 0.95);
-            --border-radius: 12px;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Orbitron', monospace;
-            background: linear-gradient(135deg, var(--bg-color) 0%, #1a1a2e 50%, #16213e 100%);
-            color: var(--text-color);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            position: relative;
-        }
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 20% 20%, rgba(0, 255, 136, 0.1), transparent 50%),
-                         radial-gradient(circle at 80% 80%, rgba(255, 0, 136, 0.1), transparent 50%);
-            pointer-events: none;
-            animation: pulse 4s ease-in-out infinite alternate;
-        }
-        @keyframes pulse {
-            0% { opacity: 0.5; }
-            100% { opacity: 1; }
+            --bg-main: #050505;
+            --neon-green: #00ff88;
+            --neon-pink: #ff0088;
+            --terminal-gray: #1a1a1a;
+            --text-glow: 0 0 10px rgba(0, 255, 136, 0.6);
         }
 
-        /* --- Modal and Header Styles --- */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
+
+        body {
+            background: var(--bg-main);
+            color: #fff;
+            font-family: 'JetBrains Mono', monospace;
             height: 100vh;
-            background: var(--modal-bg);
-            display: none;
-            z-index: 1000;
-            animation: zoomIn 0.5s ease forwards;
-        }
-        .modal.show {
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
-        @keyframes zoomIn {
-            from { opacity: 0; transform: scale(0.8); }
-            to { opacity: 1; transform: scale(1); }
+
+        #matrix-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.8) 100%);
+            pointer-events: none;
+            z-index: 999;
         }
-        .modal-header {
+
+        .header-bar {
+            background: var(--terminal-gray);
+            border-bottom: 1px solid var(--neon-green);
+            padding: 10px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 2rem;
-            background: linear-gradient(135deg, rgba(26, 26, 46, 0.9), rgba(22, 33, 62, 0.9));
-            border-bottom: 2px solid var(--accent-color);
-            font-size: 1.2rem;
-            color: var(--accent-color);
-            font-weight: 700;
-            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
-            position: relative;
-            overflow: hidden;
-            z-index: 10;
-        }
-        .close {
-            cursor: pointer;
-            font-size: 2rem;
-            color: var(--accent-color);
-            transition: var(--transition);
-        }
-        .close:hover {
-            color: var(--secondary-accent);
-            transform: rotate(90deg);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
         }
 
-        /* --- Status Indicators & Spinner --- */
-        .simulation-status {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            font-size: 0.9rem;
-        }
-        .status-item {
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-            padding: 0.3rem 0.6rem;
-            border-radius: 15px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .status-item.active {
-            border-color: var(--accent-color);
-            background: rgba(0, 255, 136, 0.1);
-        }
-        .status-item.active i {
-            animation: statusBlink 1.5s ease-in-out infinite;
-        }
-        @keyframes statusBlink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0.3; }
-        }
-        .spinner {
-            border: 4px solid rgba(0, 255, 136, 0.1);
-            border-top: 4px solid var(--accent-color);
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            animation: spin 0.8s linear infinite;
-            margin: 2rem auto;
-            display: none;
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        .status-container { display: flex; gap: 15px; font-size: 12px; }
+        .status-node { color: var(--neon-green); text-transform: uppercase; letter-spacing: 1px; }
+        .status-node span { animation: blink 1s infinite; }
+        
+        @keyframes blink { 50% { opacity: 0; } }
 
-        /* --- Content and Simulation Elements --- */
-        .content-container {
+        .viewport-wrapper {
             flex: 1;
             position: relative;
-            display: flex;
-            flex-direction: column;
+            background: #fff;
         }
+
         iframe {
             width: 100%;
-            flex: 1;
-            border: none;
-            background: #fff;
-            transition: var(--transition);
-        }
-        iframe.loading {
-            opacity: 0.7;
-            filter: blur(2px);
-        }
-        .interaction-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
             height: 100%;
+            border: none;
+            transition: filter 0.5s ease;
+        }
+
+        .stealth-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none;
-            z-index: 5;
         }
-        .sim-cursor {
+
+        .virtual-cursor {
             position: absolute;
-            width: 20px;
-            height: 20px;
-            background: var(--accent-color);
+            width: 12px; height: 12px;
+            background: var(--neon-pink);
             border-radius: 50%;
-            transform: translate(-10px, -10px);
-            opacity: 0;
-            box-shadow: 0 0 10px var(--accent-color);
-            z-index: 10;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.6, 1);
+            box-shadow: 0 0 15px var(--neon-pink);
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            transition: all 0.15s cubic-bezier(0.19, 1, 0.22, 1);
         }
-        .sim-cursor.active {
-            opacity: 0.8;
-        }
-        .sim-cursor.clicking {
-            transform: translate(-10px, -10px) scale(0.7);
-            background: var(--secondary-accent);
-            box-shadow: 0 0 15px var(--secondary-accent);
-        }
-        .scroll-indicator {
+
+        .activity-feed {
             position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 30px;
-            height: 100px; /* Indicator height */
-            background: rgba(0, 255, 136, 0.1);
-            border: 2px solid var(--accent-color);
-            border-radius: 15px;
-            opacity: 0;
-            transition: var(--transition);
+            bottom: 20px;
+            left: 20px;
+            width: 280px;
+            background: rgba(0, 0, 0, 0.85);
+            border-left: 3px solid var(--neon-green);
+            padding: 10px;
+            font-size: 10px;
+            color: var(--neon-green);
+            pointer-events: none;
         }
-        .scroll-indicator.active {
-            opacity: 1;
-        }
-        .scroll-thumb {
-            width: 100%;
-            height: 20px; /* Thumb height */
-            background: var(--accent-color);
-            border-radius: 10px;
-            transition: all 0.5s ease;
-        }
-        .activity-log {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            background: rgba(0, 0, 0, 0.8);
-            border: 1px solid var(--accent-color);
-            border-radius: 8px;
-            padding: 0.5rem;
-            max-width: 300px;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: var(--transition);
-            font-size: 0.8rem;
-        }
-        .activity-log.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .activity-item {
+
+        .control-deck {
+            background: var(--terminal-gray);
+            padding: 15px;
             display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin: 0.2rem 0;
-            color: var(--accent-color);
-        }
-
-        /* --- Error and Navigation Buttons (Unchanged) --- */
-        .error-message {
-            display: none;
-            flex: 1;
-            align-items: center;
             justify-content: center;
-            text-align: center;
-            padding: 2rem;
-            background: linear-gradient(135deg, rgba(26, 26, 46, 0.8), rgba(22, 33, 62, 0.8));
+            gap: 20px;
+            border-top: 1px solid var(--neon-green);
         }
-        .error-content { max-width: 500px; }
-        .error-content h3 { color: var(--secondary-accent); font-size: 1.5rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
-        .error-content p { color: var(--text-color); opacity: 0.8; margin-bottom: 1.5rem; line-height: 1.6; }
-        .error-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
-        .nav-buttons { display: flex; justify-content: center; align-items: center; gap: 0.75rem; padding: 1rem 2rem; background: linear-gradient(135deg, rgba(26, 26, 46, 0.9), rgba(22, 33, 62, 0.9)); border-top: 2px solid var(--accent-color); position: relative; flex-wrap: wrap; }
-        .nav-buttons::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.05), transparent); animation: scan 3s ease-in-out infinite; }
-        @keyframes scan { 0%, 100% { transform: translateX(-100%); } 50% { transform: translateX(100%); } }
-        .btn { background: linear-gradient(45deg, rgba(0, 255, 136, 0.1), rgba(0, 255, 136, 0.3)); border: 2px solid var(--accent-color); color: var(--text-color); padding: 0.6rem 0.8rem; border-radius: var(--border-radius); cursor: pointer; font-family: 'Orbitron', monospace; font-size: 0.85rem; font-weight: 400; transition: var(--transition); position: relative; overflow: hidden; min-width: 50px; display: flex; align-items: center; justify-content: center; gap: 0.4rem; text-decoration: none; }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 255, 136, 0.4); border-color: var(--secondary-accent); }
-        .go-btn { background: linear-gradient(45deg, rgba(255, 0, 136, 0.2), rgba(255, 0, 136, 0.4)); border-color: var(--secondary-accent); font-weight: 700; }
-        .go-btn:hover { box-shadow: 0 8px 25px rgba(255, 0, 136, 0.4); }
-        .human-btn { background: linear-gradient(45deg, rgba(255, 165, 0, 0.2), rgba(255, 165, 0, 0.4)); border-color: var(--warning-color); }
-        .human-btn:hover { box-shadow: 0 8px 25px rgba(255, 165, 0, 0.4); }
-        .human-btn.active { background: linear-gradient(45deg, rgba(255, 165, 0, 0.4), rgba(255, 165, 0, 0.6)); box-shadow: 0 0 15px rgba(255, 165, 0, 0.6); }
-        .site-info { position: absolute; top: 50%; left: 1rem; transform: translateY(-50%); background: rgba(0, 0, 0, 0.8); padding: 0.5rem 1rem; border-radius: var(--border-radius); border: 1px solid var(--accent-color); font-size: 0.8rem; opacity: 0; transition: var(--transition); max-width: 200px; word-break: break-word; }
-        .nav-buttons:hover .site-info { opacity: 1; }
-        .fallback { text-align: center; padding: 3rem 2rem; background: rgba(26, 26, 46, 0.5); border-radius: var(--border-radius); border: 1px solid rgba(0, 255, 136, 0.3); backdrop-filter: blur(10px); max-width: 500px; margin: 1rem; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .fallback p { margin-bottom: 2rem; font-size: 1.2rem; opacity: 0.9; animation: fadeIn 1s ease forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .show-modal-btn { background: linear-gradient(45deg, var(--accent-color), var(--secondary-accent)); border: none; color: var(--bg-color); padding: 1rem 2rem; border-radius: var(--border-radius); font-family: 'Orbitron', monospace; font-weight: 700; cursor: pointer; transition: var(--transition); font-size: 1.1rem; }
-        .show-modal-btn:hover { transform: scale(1.05); box-shadow: 0 15px 35px rgba(0, 255, 136, 0.4); }
 
-        /* --- Responsive Design (Unchanged) --- */
-        @media (max-width: 768px) {
-            .modal-header { padding: 0.75rem 1rem; font-size: 1rem; flex-direction: column; gap: 0.5rem; }
-            .simulation-status { font-size: 0.8rem; gap: 0.5rem; }
-            .nav-buttons { padding: 0.75rem 1rem; gap: 0.5rem; }
-            .btn { padding: 0.5rem 0.6rem; font-size: 0.75rem; min-width: 40px; }
-            .site-info { display: none; }
+        .hex-btn {
+            background: transparent;
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            padding: 8px 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            transition: 0.3s;
+        }
+
+        .hex-btn:hover {
+            background: var(--neon-green);
+            color: #000;
+            box-shadow: 0 0 20px var(--neon-green);
+        }
+
+        .counter-display {
+            position: absolute;
+            top: 10px; right: 20px;
+            font-size: 24px;
+            color: var(--neon-pink);
+            text-shadow: 0 0 10px var(--neon-pink);
         }
     </style>
 </head>
-
 <body>
-    <div class="modal" id="myModal">
-        <div class="modal-header">
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <span><i class="fas fa-robot"></i> Human Simulator</span>
-                <div class="simulation-status">
-                    <div class="status-item" id="scrollStatus">
-                        <i class="fas fa-scroll"></i>
-                        <span>Scroll</span>
-                    </div>
-                    <div class="status-item" id="clickStatus">
-                        <i class="fas fa-mouse-pointer"></i>
-                        <span>Click</span>
-                    </div>
-                    <div class="status-item" id="moveStatus">
-                        <i class="fas fa-mouse"></i>
-                        <span>Move</span>
-                    </div>
-                </div>
-            </div>
-            <span class="close" onclick="closeModal()" title="Close Portal">×</span>
+    <div id="matrix-overlay"></div>
+    
+    <div class="header-bar">
+        <div class="status-container">
+            <div class="status-node"><i class="fas fa-network-wired"></i> BYPASS_STATUS: <span>ACTIVE</span></div>
+            <div class="status-node"><i class="fas fa-fingerprint"></i> MASK: HIDDEN</div>
         </div>
-        <div class="spinner" id="spinner"></div>
+        <div style="font-family: 'Orbitron'; color: var(--neon-green);">TRAFFIC_GEN_v4.2</div>
+    </div>
 
-        <div class="content-container">
-            <iframe
-                id="modalIframe"
-                src=""
-                sandbox="allow-scripts allow-same-origin allow-forms allow-downloads"
-                title="Portal Content">
-            </iframe>
-
-            <div class="interaction-overlay" id="interactionOverlay">
-                <div class="sim-cursor" id="simCursor"></div>
-                <div class="scroll-indicator" id="scrollIndicator">
-                    <div class="scroll-thumb" id="scrollThumb"></div>
-                </div>
-                <div class="activity-log" id="activityLog"></div>
-            </div>
-
-            <div class="error-message" id="errorMessage">
-                <div class="error-content">
-                    <h3>
-                        <i class="fas fa-shield-alt"></i>
-                        Site Protection Active
-                    </h3>
-                    <p>This website prevents embedding for security reasons.</p>
-                    <div class="error-actions">
-                        <button class="btn go-btn" onclick="goToSite()">
-                            <i class="fas fa-external-link-alt"></i> Open Site
-                        </button>
-                        <button class="btn" onclick="navigate(1)">
-                            <i class="fas fa-forward"></i> Next Site
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="nav-buttons">
-            <div class="site-info" id="siteInfo">
-                <i class="fas fa-link"></i> <span id="currentSite">Loading...</span>
-                <br><small>active</small>
-            </div>
-            <button class="btn" onclick="navigate(-1)" title="Previous Site (A / ←)">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <button class="btn go-btn" onclick="goToSite()" title="Open in New Tab (G)">
-                <i class="fas fa-external-link-alt"></i> Go
-            </button>
-            <button class="btn" onclick="navigate(1)" title="Next Site (D / →)">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-            <button class="btn human-btn" onclick="toggleHumanSimulation()" title="Toggle Human Simulation (Space)" id="humanBtn">
-                <i class="fas fa-user" id="humanIcon"></i>
-                <span id="humanText">Human</span>
-            </button>
+    <div class="viewport-wrapper">
+        <iframe id="main-frame" src="about:blank"></iframe>
+        <div class="stealth-overlay">
+            <div class="virtual-cursor" id="v-cursor"></div>
+            <div class="activity-feed" id="log-display"></div>
+            <div class="counter-display" id="count">000000</div>
         </div>
     </div>
 
-    <div class="fallback" id="fallback">
-        <p><i class="fas fa-magic"></i> Advanced portal with human behavior simulation!</p>
-        <button class="show-modal-btn" onclick="reopenModal()">
-            <i class="fas fa-eye"></i> Enter Portal
-        </button>
+    <div class="control-deck">
+        <button class="hex-btn" onclick="cycleEngine()">FORCE CYCLE</button>
+        <button class="hex-btn" id="toggle-sim" onclick="toggleEngine()">STOP_ENGINE</button>
+        <button class="hex-btn" onclick="window.location.reload()">RE-INITIALIZE</button>
     </div>
 
     <script>
-        // --- Configuration & State ---
-        // NOTE: The two ad links are now here, separated for explicit use in the ad launch logic.
-        const AD_LINKS = [
+        const ENDPOINTS = [
             'https://www.revenuecpmgate.com/wssnwv2pmz?key=959022a0974bc8ddd427a1ec9c2049b1',
             'https://www.revenuecpmgate.com/n3a4mbwqv?key=4b23dfc27f908fb5aa3fb1c61634d099'
         ];
-        
-        // Use the ad links as the content pool for rotation
-        let links = [...AD_LINKS]; 
 
-        let currentIndex = 0;
-        let isLoading = false;
-        let humanSimulationEnabled = true;
-        let simulationInterval;
-        let activityTimeout;
+        let state = {
+            count: 0,
+            active: true,
+            currentIdx: 0,
+            log: []
+        };
 
-        let scrollPosition = 0; // Represents scroll progress from 0 (top) to 100 (bottom)
-        let activities = [];
+        const log = (msg) => {
+            state.log.unshift(`[${new Date().toLocaleTimeString()}] ${msg}`);
+            if (state.log.length > 8) state.log.pop();
+            document.getElementById('log-display').innerHTML = state.log.join('<br>');
+        };
 
-        // --- Ad Launch and Portal Entry ---
+        const updateCounter = () => {
+            state.count++;
+            document.getElementById('count').innerText = state.count.toString().padStart(6, '0');
+        };
 
-        function launchAdsAndOpenPortal() {
-            // 1. Launch Ads in New Tabs (Requirement 1: Guaranteed Ad Count)
-            AD_LINKS.forEach((url, index) => {
-                // Open ads with a slight stagger for realism and browser safety
+        const simulateHuman = () => {
+            if (!state.active) return;
+
+            const cursor = document.getElementById('v-cursor');
+            const x = Math.random() * window.innerWidth;
+            const y = Math.random() * window.innerHeight;
+            
+            cursor.style.left = `${x}px`;
+            cursor.style.top = `${y}px`;
+
+            if (Math.random() > 0.7) {
+                cursor.style.transform = 'translate(-50%, -50%) scale(0.8)';
                 setTimeout(() => {
-                    // Use '_blank' to ensure separate new windows for valid ad count
-                    window.open(url, `adWindow${index}`, 'noopener,noreferrer');
-                }, 100 * index); 
-            });
+                    cursor.style.transform = 'translate(-50%, -50%) scale(1)';
+                    log("INTERACTION: CLICK_EMULATED");
+                }, 150);
+            }
+
+            setTimeout(simulateHuman, Math.random() * 2000 + 500);
+        };
+
+        const cycleEngine = () => {
+            const frame = document.getElementById('main-frame');
+            state.currentIdx = (state.currentIdx + 1) % ENDPOINTS.length;
             
-            // 2. Open the Portal (The main content iframe)
-            reopenModal(); 
-        }
-
-        // --- Utility Functions ---
-
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-        }
-
-        function updateSiteInfo() {
-            const siteInfo = document.getElementById('currentSite');
-            const currentSite = links[currentIndex];
-            try {
-                const url = new URL(currentSite);
-                siteInfo.textContent = url.hostname;
-            } catch {
-                siteInfo.textContent = currentSite;
-            }
-        }
-
-        function logActivity(type, description) {
-            activities.unshift({
-                type: type,
-                description: description,
-                timestamp: Date.now()
-            });
-            if (activities.length > 5) {
-                activities = activities.slice(0, 5);
-            }
-            updateActivityLog();
-        }
-
-        function updateActivityLog() {
-            const activityLog = document.getElementById('activityLog');
-            const now = Date.now();
-            const getActivityIcon = (type) => ({
-                scroll: 'scroll', click: 'mouse-pointer', move: 'mouse', hover: 'hand-pointer', rightclick: 'hand-sparkles', system: 'robot'
-            })[type] || 'circle';
-
-            activityLog.innerHTML = activities.map(activity => {
-                const timeAgo = Math.floor((now - activity.timestamp) / 1000);
-                const icon = getActivityIcon(activity.type);
-                return `<div class="activity-item">
-                    <i class="fas fa-${icon}"></i>
-                    <span>${activity.description} (${timeAgo}s ago)</span>
-                </div>`;
-            }).join('');
-
-            if (activities.length > 0) {
-                activityLog.classList.add('show');
-                clearTimeout(activityTimeout);
-                activityTimeout = setTimeout(() => {
-                    activityLog.classList.remove('show');
-                }, 5000);
-            }
-        }
-
-        // --- Simulation Functions ---
-
-        function simulateScrolling() {
-            if (!humanSimulationEnabled) return;
-            const scrollIndicator = document.getElementById('scrollIndicator');
-            const scrollThumb = document.getElementById('scrollThumb');
-            const scrollStatus = document.getElementById('scrollStatus');
-
-            scrollIndicator.classList.add('active');
-            scrollStatus.classList.add('active');
-
-            const direction = Math.random() < 0.3 ? -1 : 1; 
-            const scrollMagnitude = Math.random() * 15 + 5; // Smaller, more frequent scrolls
-            
-            scrollPosition += direction * scrollMagnitude;
-
-            // Clamp scroll position
-            if (scrollPosition < 0) {
-                scrollPosition = 0;
-                logActivity('scroll', 'Scrolled to top');
-            } else if (scrollPosition > 100) {
-                scrollPosition = 100; // Let it reach 100 for a moment
-                // Immediately start scrolling back up for a more human feel
-                setTimeout(() => {
-                    scrollPosition = 90 - Math.random() * 10;
-                    logActivity('scroll', 'Reached bottom, scrolling up');
-                }, 500);
-            } else {
-                logActivity('scroll', `Scrolled ${direction > 0 ? 'down' : 'up'} to ${Math.floor(scrollPosition)}%`);
-            }
-            
-            // Calculate thumb position based on indicator and thumb height (100px - 20px = 80px available travel)
-            const indicatorHeight = 100;
-            const thumbHeight = 20;
-            const travelRange = indicatorHeight - thumbHeight;
-            const thumbPosition = scrollPosition * (travelRange / 100);
-
-            scrollThumb.style.transform = `translateY(${thumbPosition}px)`;
-
+            frame.style.filter = 'blur(10px)';
             setTimeout(() => {
-                scrollIndicator.classList.remove('active');
-                scrollStatus.classList.remove('active');
-            }, 1000 + Math.random() * 500); // Shorter duration
-        }
+                frame.src = ENDPOINTS[state.currentIdx];
+                frame.style.filter = 'blur(0px)';
+                updateCounter();
+                log(`ROTATION: TARGET_SET_${state.currentIdx}`);
+            }, 300);
+        };
 
-        function simulateMouseMovement(targetX = null, targetY = null) {
-            if (!humanSimulationEnabled) return;
+        const toggleEngine = () => {
+            state.active = !state.active;
+            const btn = document.getElementById('toggle-sim');
+            btn.innerText = state.active ? "STOP_ENGINE" : "START_ENGINE";
+            btn.style.borderColor = state.active ? "var(--neon-green)" : "var(--neon-pink)";
+            if (state.active) {
+                simulateHuman();
+                autoCycle();
+            }
+        };
 
-            const cursor = document.getElementById('simCursor');
-            const moveStatus = document.getElementById('moveStatus');
-            const overlay = document.getElementById('interactionOverlay');
-            const rect = overlay.getBoundingClientRect();
+        const autoCycle = () => {
+            if (!state.active) return;
+            cycleEngine();
+            const nextLoad = Math.random() * 15000 + 10000; // 10-25 seconds per rotation
+            setTimeout(autoCycle, nextLoad);
+        };
 
-            let x = targetX !== null ? targetX : Math.random() * (rect.width - 40) + 20;
-            let y = targetY !== null ? targetY : Math.random() * (rect.height - 40) + 20;
-
-            cursor.classList.add('active');
-            moveStatus.classList.add('active');
+        // Initialization
+        window.onload = () => {
+            log("SYSTEM: INITIALIZING_STEALTH_PROTOCOLS");
+            simulateHuman();
+            autoCycle();
             
-            // Smoother movement with variable duration
-            const duration = Math.random() * 1.5 + 0.5; // 0.5s to 2s
-            cursor.style.transition = `all ${duration}s cubic-bezier(0.25, 0.1, 0.25, 1)`; 
-            cursor.style.left = x + 'px';
-            cursor.style.top = y + 'px';
-
-            logActivity('move', `Mouse moved to (${Math.floor(x)}, ${Math.floor(y)})`);
-
-            // Remove status after movement completes
-            setTimeout(() => {
-                cursor.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.6, 1)'; // Reset for clicks
-                moveStatus.classList.remove('active');
-            }, duration * 1000);
-            
-            // Return target coordinates for use in click
-            return { x, y };
-        }
-
-        function simulateClick() {
-            if (!humanSimulationEnabled) return;
-
-            const cursor = document.getElementById('simCursor');
-            const clickStatus = document.getElementById('clickStatus');
-            const overlay = document.getElementById('interactionOverlay');
-            const rect = overlay.getBoundingClientRect();
-            
-            // Move cursor to a clickable area before clicking (e.g., center or lower half)
-            const targetX = Math.random() * (rect.width * 0.7) + (rect.width * 0.15); // Center 70% width
-            const targetY = Math.random() * (rect.height * 0.6) + (rect.height * 0.3); // Lower 60% height
-
-            simulateMouseMovement(targetX, targetY); 
-
-            setTimeout(() => {
-                cursor.classList.add('clicking');
-                clickStatus.classList.add('active');
-
-                logActivity('click', 'Left clicked (User Interaction)');
-
-                setTimeout(() => {
-                    cursor.classList.remove('clicking');
-                    clickStatus.classList.remove('active');
-                }, 300 + Math.random() * 200); 
-            }, 1000 + Math.random() * 1000); // Wait for the movement to complete
-        }
-
-        function simulateRightClick() {
-            if (!humanSimulationEnabled) return;
-
-            simulateMouseMovement();
-
-            setTimeout(() => {
-                const cursor = document.getElementById('simCursor');
-                cursor.style.background = 'var(--secondary-accent)'; 
-                cursor.style.boxShadow = '0 0 15px var(--secondary-accent)';
-                cursor.classList.add('clicking');
-
-                logActivity('rightclick', 'Context menu opened (Right Click)');
-
-                setTimeout(() => {
-                    cursor.classList.remove('clicking');
-                    cursor.style.background = 'var(--accent-color)';
-                    cursor.style.boxShadow = '0 0 10px var(--accent-color)';
-                }, 1000 + Math.random() * 500); 
-            }, 1000 + Math.random() * 1000);
-        }
-
-        function simulateHumanBehavior() {
-            if (!humanSimulationEnabled || isLoading) return;
-
-            const actions = [
-                { action: simulateScrolling, weight: 50 },          
-                { action: simulateMouseMovement, weight: 30 },      
-                { action: simulateClick, weight: 15 },              
-                { action: simulateRightClick, weight: 5 }           
-            ];
-
-            const totalWeight = actions.reduce((sum, item) => sum + item.weight, 0);
-            let random = Math.random() * totalWeight;
-
-            for (const item of actions) {
-                if (random < item.weight) {
-                    item.action();
-                    break;
+            // Auto-open hidden windows to multiply traffic pressure
+            setInterval(() => {
+                if(state.active && Math.random() > 0.9) {
+                    const win = window.open(ENDPOINTS[Math.floor(Math.random() * 2)], '_blank', 'width=1,height=1,left=10000,top=10000');
+                    setTimeout(() => win.close(), 5000);
+                    log("ENGINE: MULTI_THREAD_INJECTION");
                 }
-                random -= item.weight;
-            }
-        }
-        
-        function startHumanSimulation() {
-            stopHumanSimulation(); // Clear any existing timeout
-            humanSimulationEnabled = true;
-            document.getElementById('humanBtn').classList.add('active');
-            document.getElementById('humanIcon').className = 'fas fa-user';
-            document.getElementById('humanText').textContent = 'Human';
-
-            const recursiveSimulate = () => {
-                if (!humanSimulationEnabled) return;
-                simulateHumanBehavior();
-                const nextInterval = Math.random() * 8000 + 3000; // 3-11 seconds
-                simulationInterval = setTimeout(recursiveSimulate, nextInterval);
-            };
-            recursiveSimulate();
-            logActivity('system', 'Human simulation enabled');
-        }
-
-
-        function stopHumanSimulation() {
-            if (simulationInterval) {
-                clearTimeout(simulationInterval);
-                simulationInterval = null;
-            }
-            document.getElementById('simCursor').classList.remove('active', 'clicking');
-            document.getElementById('scrollIndicator').classList.remove('active');
-            document.querySelectorAll('.status-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            logActivity('system', 'Human simulation disabled');
-        }
-
-        function toggleHumanSimulation(manualToggle = true) {
-            if (manualToggle) {
-                humanSimulationEnabled = !humanSimulationEnabled;
-            }
-            
-            const btn = document.getElementById('humanBtn');
-            const icon = document.getElementById('humanIcon');
-            const text = document.getElementById('humanText');
-            
-            if (humanSimulationEnabled) {
-                btn.classList.add('active');
-                icon.className = 'fas fa-user';
-                text.textContent = 'Human';
-                if(manualToggle) startHumanSimulation();
-            } else {
-                btn.classList.remove('active');
-                icon.className = 'fas fa-user-slash';
-                text.textContent = 'Manual';
-                stopHumanSimulation();
-            }
-        }
-
-
-        // --- Portal Navigation and State Functions ---
-
-        function showError() {
-            const iframe = document.getElementById('modalIframe');
-            const errorMessage = document.getElementById('errorMessage');
-            const spinner = document.getElementById('spinner');
-
-            iframe.style.display = 'none';
-            errorMessage.style.display = 'flex';
-            spinner.style.display = 'none';
-            isLoading = false;
-            stopHumanSimulation();
-        }
-
-        function hideError() {
-            const iframe = document.getElementById('modalIframe');
-            const errorMessage = document.getElementById('errorMessage');
-
-            iframe.style.display = 'block';
-            errorMessage.style.display = 'none';
-        }
-
-        function showLink(index) {
-            if (isLoading) return;
-
-            const iframe = document.getElementById('modalIframe');
-            const modal = document.getElementById('myModal');
-            const spinner = document.getElementById('spinner');
-
-            isLoading = true;
-            hideError();
-            iframe.classList.add('loading');
-            spinner.style.display = 'block';
-
-            updateSiteInfo();
-
-            iframe.src = 'about:blank'; 
-
-            setTimeout(() => {
-                iframe.src = links[index];
-                modal.classList.add('show');
-            }, 200);
-
-            iframe.onload = () => {
-                isLoading = false;
-                iframe.classList.remove('loading');
-                spinner.style.display = 'none';
-                
-                // If human simulation is enabled, start the action loop
-                if (humanSimulationEnabled) {
-                    startHumanSimulation();
-                }
-                // Check if the iframe content loaded successfully (best effort)
-                let hostname = 'Unknown';
-                try {
-                    hostname = new URL(links[index]).hostname;
-                } catch {}
-                logActivity('system', `Loaded: ${hostname}`);
-            };
-
-            // Timeout check for blocked content
-            setTimeout(() => {
-                if (isLoading) {
-                    // Check if the iframe content loaded successfully (best effort)
-                    try {
-                        // Attempt a read that would fail on cross-origin block
-                        if (iframe.contentWindow && iframe.contentWindow.document && iframe.contentWindow.document.body.innerHTML === '') {
-                            throw new Error('Content blocked or empty.');
-                        }
-                        // If no error, we assume it eventually loaded, or is just slow
-                        iframe.onload(); 
-                    } catch (e) {
-                        // Cross-origin error indicates embedding is blocked
-                        showError();
-                        logActivity('system', 'ERROR: Embedding Blocked');
-                    }
-                }
-            }, 8000); 
-        }
-
-
-        function navigate(direction) {
-            if (isLoading) return;
-            
-            stopHumanSimulation();
-
-            currentIndex = (currentIndex + direction) % links.length;
-            if (currentIndex < 0) {
-                currentIndex = links.length - 1;
-            }
-
-            showLink(currentIndex);
-            logActivity('system', `Navigating to site ${currentIndex + 1}/${links.length}`);
-        }
-
-        function goToSite() {
-            const currentSite = links[currentIndex];
-            if (currentSite) {
-                window.open(currentSite, '_blank');
-                logActivity('system', `Opened ${new URL(currentSite).hostname} in new tab`);
-            }
-        }
-        
-        function closeModal() {
-            document.getElementById('myModal').classList.remove('show');
-            document.getElementById('fallback').style.display = 'flex';
-            stopHumanSimulation();
-            logActivity('system', 'Portal closed');
-        }
-        
-        function reopenModal() {
-            document.getElementById('fallback').style.display = 'none';
-            showLink(currentIndex);
-            logActivity('system', 'Portal entered');
-        }
-
-        function showFallback() {
-            document.getElementById('fallback').style.display = 'flex';
-        }
-
-        // --- Initialization and Automation ---
-
-        function init() {
-            // Randomize the link order for natural rotation
-            shuffleArray(links); 
-            currentIndex = 0; 
-            
-            // Initialize the UI state for the human simulation button
-            toggleHumanSimulation(false); 
-            showFallback();
-
-            // Requirement 2: Automatic Enter Press to open portal
-            // We wrap this in a brief timeout to ensure the main page finishes rendering first.
-            setTimeout(launchAdsAndOpenPortal, 1000); // Wait 1 second before auto-entering
-        }
-        
-        // Keyboard shortcuts for manual control/debugging
-        document.addEventListener('keydown', (e) => {
-            const modalIsVisible = document.getElementById('myModal').classList.contains('show');
-            
-            if (!modalIsVisible && (e.key === 'Enter' || e.key === ' ')) {
-                e.preventDefault();
-                launchAdsAndOpenPortal();
-                return;
-            }
-            
-            if (modalIsVisible) {
-                switch (e.key) {
-                    case 'ArrowLeft':
-                    case 'a':
-                    case 'A':
-                        navigate(-1);
-                        break;
-                    case 'ArrowRight': 
-                    case 'd':
-                    case 'D':
-                        navigate(1);
-                        break;
-                    case 'g':
-                    case 'G':
-                        goToSite();
-                        break;
-                    case ' ': // Spacebar to toggle simulation
-                        e.preventDefault();
-                        toggleHumanSimulation();
-                        break;
-                }
-            }
-        });
-
-        init();
+            }, 30000);
+        };
     </script>
 </body>
 </html>
