@@ -3,248 +3,191 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Traffic Matrix [Encrypted]</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=JetBrains+Mono:wght@300&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>High-Throughput Traffic Optimization Matrix</title>
     <style>
         :root {
-            --bg-main: #050505;
-            --neon-green: #00ff88;
-            --neon-pink: #ff0088;
-            --terminal-gray: #1a1a1a;
-            --text-glow: 0 0 10px rgba(0, 255, 136, 0.6);
+            --bg-dark: #020204;
+            --matrix-green: #00ff66;
+            --panel-bg: #090c10;
+            --border-color: #1f242c;
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
-
         body {
-            background: var(--bg-main);
-            color: #fff;
-            font-family: 'JetBrains Mono', monospace;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            background-color: var(--bg-dark);
+            color: #e6edf3;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
         }
-
-        #matrix-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.8) 100%);
-            pointer-events: none;
-            z-index: 999;
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 24px;
         }
-
-        .header-bar {
-            background: var(--terminal-gray);
-            border-bottom: 1px solid var(--neon-green);
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+        .header {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+            margin-bottom: 20px;
         }
-
-        .status-container { display: flex; gap: 15px; font-size: 12px; }
-        .status-node { color: var(--neon-green); text-transform: uppercase; letter-spacing: 1px; }
-        .status-node span { animation: blink 1s infinite; }
-        
-        @keyframes blink { 50% { opacity: 0; } }
-
-        .viewport-wrapper {
-            flex: 1;
-            position: relative;
-            background: #fff;
-        }
-
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            transition: filter 0.5s ease;
-        }
-
-        .stealth-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
-        }
-
-        .virtual-cursor {
-            position: absolute;
-            width: 12px; height: 12px;
-            background: var(--neon-pink);
-            border-radius: 50%;
-            box-shadow: 0 0 15px var(--neon-pink);
-            transform: translate(-50%, -50%);
-            z-index: 1000;
-            transition: all 0.15s cubic-bezier(0.19, 1, 0.22, 1);
-        }
-
-        .activity-feed {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            width: 280px;
-            background: rgba(0, 0, 0, 0.85);
-            border-left: 3px solid var(--neon-green);
-            padding: 10px;
-            font-size: 10px;
-            color: var(--neon-green);
-            pointer-events: none;
-        }
-
-        .control-deck {
-            background: var(--terminal-gray);
-            padding: 15px;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            border-top: 1px solid var(--neon-green);
-        }
-
-        .hex-btn {
-            background: transparent;
-            border: 1px solid var(--neon-green);
-            color: var(--neon-green);
-            padding: 8px 20px;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 11px;
-            transition: 0.3s;
-        }
-
-        .hex-btn:hover {
-            background: var(--neon-green);
-            color: #000;
-            box-shadow: 0 0 20px var(--neon-green);
-        }
-
-        .counter-display {
-            position: absolute;
-            top: 10px; right: 20px;
+        .header h1 {
+            color: var(--matrix-green);
+            margin: 0;
             font-size: 24px;
-            color: var(--neon-pink);
-            text-shadow: 0 0 10px var(--neon-pink);
+            font-weight: 600;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .metric-card {
+            background: #0d1117;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 16px;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: #8b949e;
+            text-transform: uppercase;
+        }
+        .metric-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-top: 8px;
+        }
+        .console-log {
+            background: #000000;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            color: var(--matrix-green);
+            font-size: 11px;
+            line-height: 1.5;
         }
     </style>
 </head>
 <body>
-    <div id="matrix-overlay"></div>
-    
-    <div class="header-bar">
-        <div class="status-container">
-            <div class="status-node"><i class="fas fa-network-wired"></i> BYPASS_STATUS: <span>ACTIVE</span></div>
-            <div class="status-node"><i class="fas fa-fingerprint"></i> MASK: HIDDEN</div>
-        </div>
-        <div style="font-family: 'Orbitron'; color: var(--neon-green);">TRAFFIC_GEN_v4.2</div>
+
+<div class="dashboard-container">
+    <div class="header">
+        <h1>CONCURRENCY TRAFFIC HARVESTER v5.0</h1>
     </div>
 
-    <div class="viewport-wrapper">
-        <iframe id="main-frame" src="about:blank"></iframe>
-        <div class="stealth-overlay">
-            <div class="virtual-cursor" id="v-cursor"></div>
-            <div class="activity-feed" id="log-display"></div>
-            <div class="counter-display" id="count">000000</div>
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-label">Active Worker Threads</div>
+            <div class="metric-value" id="active-threads">0</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Total Requests Dispatched</div>
+            <div class="metric-value" id="total-requests">000000</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Target Pools Rotated</div>
+            <div class="metric-value" id="pool-rotations">0</div>
         </div>
     </div>
 
-    <div class="control-deck">
-        <button class="hex-btn" onclick="cycleEngine()">FORCE CYCLE</button>
-        <button class="hex-btn" id="toggle-sim" onclick="toggleEngine()">STOP_ENGINE</button>
-        <button class="hex-btn" onclick="window.location.reload()">RE-INITIALIZE</button>
-    </div>/mh2gus2ir?key=815311eb6032abacf8eb2bee2247ce5d
+    <div class="console-log" id="console-output"></div>
+</div>
 
-    <script>
-        const ENDPOINTS = [
-            'https://www.revenuecpmgate.com/mh2gus2ir?key=815311eb6032abacf8eb2bee2247ce5d',
-            'https://www.revenuecpmgate.com/tyh778cfu?key=bdc11b51e5094b01b46df22ad94b9ab4'
-        ];
+<script>
+    // Configuration Target Array
+    const TARGET_POOLS = [
+        'https://www.revenuecpmgate.com/mh2gus2ir?key=815311eb6032abacf8eb2bee2247ce5d',
+        'https://www.revenuecpmgate.com/tyh778cfu?key=bdc11b51e5094b01b46df22ad94b9ab4'
+    ];
 
-        let state = {
-            count: 0,
-            active: true,
-            currentIdx: 0,
-            log: []
-        };
+    const engineRuntime = {
+        totalDispatched: 0,
+        activeWindows: [],
+        maxConcurrency: 100,
+        rotationCount: 0
+    };
 
-        const log = (msg) => {
-            state.log.unshift(`[${new Date().toLocaleTimeString()}] ${msg}`);
-            if (state.log.length > 8) state.log.pop();
-            document.getElementById('log-display').innerHTML = state.log.join('<br>');
-        };
+    function outputLog(text) {
+        const consoleEl = document.getElementById('console-output');
+        const timestamp = new Date().toISOString().slice(11, 19);
+        consoleEl.innerHTML += `[${timestamp}] SYS_ENG_LOG: ${text}<br>`;
+        consoleEl.scrollTop = consoleEl.scrollHeight;
+    }
 
-        const updateCounter = () => {
-            state.count++;
-            document.getElementById('count').innerText = state.count.toString().padStart(6, '0');
-        };
-
-        const simulateHuman = () => {
-            if (!state.active) return;
-
-            const cursor = document.getElementById('v-cursor');
-            const x = Math.random() * window.innerWidth;
-            const y = Math.random() * window.innerHeight;
-            
-            cursor.style.left = `${x}px`;
-            cursor.style.top = `${y}px`;
-
-            if (Math.random() > 0.7) {
-                cursor.style.transform = 'translate(-50%, -50%) scale(0.8)';
-                setTimeout(() => {
-                    cursor.style.transform = 'translate(-50%, -50%) scale(1)';
-                    log("INTERACTION: CLICK_EMULATED");
-                }, 150);
+    // High-Frequency Concurrency Handler
+    async function allocateTrafficThread() {
+        if (engineRuntime.activeWindows.length >= engineRuntime.maxConcurrency) {
+            // Memory Management: Prune the earliest generated frame allocation
+            let closedTarget = engineRuntime.activeWindows.shift();
+            if (closedTarget && !closedTarget.closed) {
+                closedTarget.close();
             }
+        }
 
-            setTimeout(simulateHuman, Math.random() * 2000 + 500);
-        };
-
-        const cycleEngine = () => {
-            const frame = document.getElementById('main-frame');
-            state.currentIdx = (state.currentIdx + 1) % ENDPOINTS.length;
+        // Randomize target selection across the pool matrices
+        const indexSelection = Math.floor(Math.random() * TARGET_POOLS.length);
+        const targetUrl = TARGET_POOLS[indexSelection];
+        
+        try {
+            // Note: Requires pop-up blocker exceptions configured within the runtime sandbox
+            const workerFrame = window.open(targetUrl, '_blank', 'width=200,height=200,left=5000,top=5000,noopener,noreferrer');
             
-            frame.style.filter = 'blur(10px)';
-            setTimeout(() => {
-                frame.src = ENDPOINTS[state.currentIdx];
-                frame.style.filter = 'blur(0px)';
-                updateCounter();
-                log(`ROTATION: TARGET_SET_${state.currentIdx}`);
-            }, 300);
-        };
-
-        const toggleEngine = () => {
-            state.active = !state.active;
-            const btn = document.getElementById('toggle-sim');
-            btn.innerText = state.active ? "STOP_ENGINE" : "START_ENGINE";
-            btn.style.borderColor = state.active ? "var(--neon-green)" : "var(--neon-pink)";
-            if (state.active) {
-                simulateHuman();
-                autoCycle();
-            }
-        };
-
-        const autoCycle = () => {
-            if (!state.active) return;
-            cycleEngine();
-            const nextLoad = Math.random() * 15000 + 10000; // 10-25 seconds per rotation
-            setTimeout(autoCycle, nextLoad);
-        };
-
-        // Initialization
-        window.onload = () => {
-            log("SYSTEM: INITIALIZING_STEALTH_PROTOCOLS");
-            simulateHuman();
-            autoCycle();
-            
-            // Auto-open hidden windows to multiply traffic pressure
-            setInterval(() => {
-                if(state.active && Math.random() > 0.9) {
-                    const win = window.open(ENDPOINTS[Math.floor(Math.random() * 2)], '_blank', 'width=1,height=1,left=10000,top=10000');
-                    setTimeout(() => win.close(), 5000);
-                    log("ENGINE: MULTI_THREAD_INJECTION");
+            if (workerFrame) {
+                engineRuntime.activeWindows.push(workerFrame);
+                engineRuntime.totalDispatched++;
+                
+                // Update interface states asynchronously
+                document.getElementById('active-threads').innerText = engineRuntime.activeWindows.length;
+                document.getElementById('total-requests').innerText = engineRuntime.totalDispatched.toString().padStart(6, '0');
+                
+                if (engineRuntime.totalDispatched % 10 === 0) {
+                    engineRuntime.rotationCount++;
+                    document.getElementById('pool-rotations').innerText = engineRuntime.rotationCount;
+                    outputLog(`LOAD_BALANCER: Dynamic rotation executed on cluster pool ${indexSelection}`);
                 }
-            }, 30000);
-        };
-    </script>
+            } else {
+                outputLog("IO_WARNING: Allocation call throttled by runtime environment restrictions.");
+            }
+        } catch (err) {
+            outputLog(`THREAD_EXCEPTION: Fault detected during stream initialization -> ${err.message}`);
+        }
+    }
+
+    // Automated Loop Coordinator
+    function initializeEngineCore() {
+        outputLog("KERNEL: Initializing parallel automation matrices...");
+        
+        // Parallelized intervals running simultaneously to accelerate thread deployment
+        const coreIntervalDelay = 150; // Optimized rapid execution loop in milliseconds
+        
+        setInterval(() => {
+            allocateTrafficThread();
+        }, coreIntervalDelay);
+
+        setInterval(() => {
+            if (engineRuntime.activeWindows.length > 20) {
+                outputLog(`GARBAGE_COLLECTOR: Flushing active thread overhead to sustain processing velocity.`);
+                // Clean older contexts aggressively to preserve device memory performance
+                const purgeBatch = engineRuntime.activeWindows.splice(0, 10);
+                purgeBatch.forEach(win => {
+                    if (win && !win.closed) win.close();
+                });
+                document.getElementById('active-threads').innerText = engineRuntime.activeWindows.length;
+            }
+        }, 15000);
+    }
+
+    // Auto-trigger setup on system load complete
+    window.onload = () => {
+        initializeEngineCore();
+    };
+</script>
+
 </body>
 </html>
