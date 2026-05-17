@@ -3,20 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Premium Content & Traffic Hub</title>
-    <!-- Professional Google Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>Production Matrix: Enterprise Traffic Distribution Core</title>
+    
+    <!-- External Typography & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
-            --bg-primary: #0f172a;
-            --bg-secondary: #1e293b;
-            --accent-color: #38bdf8;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border-ui: #334155;
-            --success: #10b981;
+            --bg-dark-core: #030712;
+            --bg-panel-surface: #111827;
+            --bg-card-inner: #1f2937;
+            --color-neon-blue: #0ea5e9;
+            --color-neon-green: #10b981;
+            --color-neon-pink: #f43f5e;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --border-element: #374151;
         }
 
         * {
@@ -27,75 +30,81 @@
         }
 
         body {
-            background-color: var(--bg-primary);
-            color: var(--text-main);
-            line-height: 1.6;
-            padding-bottom: 60px;
+            background-color: var(--bg-dark-core);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            padding-bottom: 40px;
         }
 
-        /* Navigation Header */
+        /* Top Architecture Header */
         header {
-            background-color: var(--bg-secondary);
-            border-bottom: 1px solid var(--border-ui);
+            background-color: var(--bg-panel-surface);
+            border-bottom: 1px solid var(--border-element);
             padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 1000;
         }
 
-        .logo {
-            font-size: 20px;
+        .system-logo {
+            font-size: 18px;
             font-weight: 700;
-            color: var(--accent-color);
+            color: var(--color-neon-blue);
             display: flex;
             align-items: center;
             gap: 10px;
+            letter-spacing: 0.5px;
         }
 
-        .telemetry-badge {
-            background: rgba(56, 189, 248, 0.1);
-            border: 1px solid var(--accent-color);
-            padding: 6px 12px;
+        .system-logo span {
+            color: var(--text-primary);
+            font-weight: 300;
+        }
+
+        .global-badge {
+            background: rgba(14, 165, 233, 0.1);
+            border: 1px solid var(--color-neon-blue);
+            padding: 6px 14px;
             border-radius: 20px;
             font-size: 12px;
-            color: var(--accent-color);
             font-weight: 600;
+            color: var(--color-neon-blue);
         }
 
-        /* Main Content Layout */
-        .container {
-            max-width: 1200px;
-            margin: 30px auto;
+        /* Master Application Layout */
+        .workspace-grid {
+            max-width: 1400px;
+            margin: 25px auto;
             padding: 0 20px;
             display: grid;
             grid-template-columns: 2fr 1fr;
-            gap: 30px;
+            gap: 25px;
         }
 
-        @media (max-width: 768px) {
-            .container { grid-template-columns: 1fr; }
+        @media (max-width: 1024px) {
+            .workspace-grid { grid-template-columns: 1fr; }
         }
 
-        /* Video Showcase & Articles */
-        .main-showcase {
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--border-ui);
-            border-radius: 12px;
+        /* Video Stream & Banner Placements */
+        .primary-viewport {
+            background-color: var(--bg-panel-surface);
+            border: 1px solid var(--border-element);
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
         }
 
-        .video-container {
+        .iframe-container-wrapper {
             position: relative;
             width: 100%;
             padding-top: 56.25%; /* 16:9 Aspect Ratio */
             background: #000;
+            border-bottom: 1px solid var(--border-element);
         }
 
-        .video-container iframe {
+        .iframe-container-wrapper iframe {
             position: absolute;
             top: 0;
             left: 0;
@@ -104,227 +113,287 @@
             border: 0;
         }
 
-        .content-details {
-            padding: 25px;
-        }
-
-        .content-details h2 {
-            font-size: 24px;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        /* Native Premium Ad Slots */
-        .ad-slot-monetized {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            border: 2px dashed var(--border-ui);
-            border-radius: 8px;
+        .view-details {
             padding: 20px;
+        }
+
+        .view-details h2 {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        /* Integrated Banner Framework */
+        .monetized-banner-zone {
+            background: linear-gradient(180deg, #111827 0%, #030712 100%);
+            border: 2px dashed var(--border-element);
+            border-radius: 6px;
+            padding: 15px;
             text-align: center;
-            margin: 20px 0;
+            margin-top: 15px;
             position: relative;
-            transition: border-color 0.3s;
         }
 
-        .ad-slot-monetized:hover {
-            border-color: var(--accent-color);
-        }
-
-        .ad-label {
+        .zone-tag {
             position: absolute;
-            top: 5px;
-            left: 10px;
+            top: 4px;
+            left: 8px;
             font-size: 9px;
             text-transform: uppercase;
-            color: var(--text-muted);
-            letter-spacing: 1px;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
         }
 
-        /* Engagement Sidebar */
-        .sidebar {
+        /* Analytics & Telemetry Control Board */
+        .control-sidebar {
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
 
-        .panel-card {
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--border-ui);
-            border-radius: 12px;
+        .panel-block {
+            background-color: var(--bg-panel-surface);
+            border: 1px solid var(--border-element);
+            border-radius: 8px;
             padding: 20px;
         }
 
-        .panel-card h3 {
-            font-size: 16px;
+        .panel-block h3 {
+            font-size: 14px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
             margin-bottom: 15px;
-            border-bottom: 1px solid var(--border-ui);
-            padding-bottom: 10px;
-            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-element);
+            padding-bottom: 8px;
+            letter-spacing: 0.5px;
         }
 
-        /* Analytics Live Feed Counter */
-        .tracker-item {
+        /* Metrics Tracker Readouts */
+        .metrics-row {
             display: flex;
             justify-content: space-between;
-            font-size: 13px;
-            margin-bottom: 10px;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
         }
 
-        .tracker-value {
-            font-weight: 600;
-            color: var(--success);
+        .metrics-value-output {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            color: var(--color-neon-green);
         }
 
-        /* Interactive Element Triggers */
-        .action-btn {
-            background-color: var(--accent-color);
-            color: #000;
+        /* System Action Interceptors */
+        .btn-core-action {
+            background-color: var(--color-neon-blue);
+            color: #000000;
             border: none;
             width: 100%;
             padding: 12px;
             border-radius: 6px;
-            font-weight: 600;
+            font-weight: 700;
+            font-size: 14px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
-        .action-btn:hover {
+        .btn-core-action:hover {
             opacity: 0.9;
             transform: translateY(-1px);
+        }
+
+        /* Console Log Output Terminal */
+        .terminal-output-container {
+            background-color: #000000;
+            border: 1px solid var(--border-element);
+            border-radius: 6px;
+            padding: 12px;
+            height: 180px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--color-neon-green);
+            line-height: 1.5;
         }
     </style>
 </head>
 <body>
 
-    <!-- Header Navigation Section -->
+    <!-- Header Navigation Shell -->
     <header>
-        <div class="logo">
-            <i class="fa-solid fa-chart-line"></i> TRAFFIC_CORE v6.0
+        <div class="system-logo">
+            <i class="fa-solid fa-network-wired"></i> MATRIX_DISTRIBUTION <span>// CORE_v7.0</span>
         </div>
-        <div class="telemetry-badge" id="geo-status">
-            <i class="fa-solid fa-earth-americas"></i> Checking Network Telemetry...
+        <div class="global-badge" id="cdn-header-node">
+            <i class="fa-solid fa-globe"></i> Initializing Network Cluster...
         </div>
     </header>
 
-    <!-- Main Distribution Container -->
-    <div class="container">
+    <!-- Workspace Interface Matrix -->
+    <div class="workspace-grid">
         
-        <!-- Left Side: Interactive Video Content Showcase & Ad Blocks -->
-        <main class="main-showcase">
-            <div class="video-container">
-                <!-- Target Endpoint 1 Embedded directly to capture native interactions -->
-                <iframe id="target-player-1" src="https://www.revenuecpmgate.com/mh2gus2ir?key=815311eb6032abacf8eb2bee2247ce5d"></iframe>
-            </div>
-            
-            <div class="content-details">
-                <h2>Trending Premium Media Streams</h2>
-                <p style="color: var(--text-muted); font-size: 14px;">
-                    Experience uninterrupted ultra-high-definition streaming data configurations directly inside your browser window context.
-                </p>
+        <!-- Left Column: Asset Deployment Viewports -->
+        <div class="left-workspace-column">
+            <div class="primary-viewport">
+                <div class="iframe-container-wrapper">
+                    <!-- Targeted Ingestion Destination 1 -->
+                    <iframe id="dom-target-frame-1" src="https://www.revenuecpmgate.com/mh2gus2ir?key=815311eb6032abacf8eb2bee2247ce5d"></iframe>
+                </div>
+                
+                <div class="view-details">
+                    <h2>Distributed Streaming Content Engine</h2>
+                    <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 10px;">
+                        Asynchronous multi-threaded pipeline executing dynamic content loading routines across registered system assets.
+                    </p>
 
-                <!-- High-Tier CPM Native Ad Banner Container -->
-                <div class="ad-slot-monetized">
-                    <span class="ad-label">Sponsored Media Stream</span>
-                    <!-- Target Endpoint 2 Embedded securely into high-visibility content zone -->
-                    <iframe id="target-banner-2" src="https://www.revenuecpmgate.com/tyh778cfu?key=bdc11b51e5094b01b46df22ad94b9ab4" style="width:100%; height:90px; border:none; scrolling:no;"></iframe>
+                    <!-- Embedded Native Advertisement Unit Slot -->
+                    <div class="monetized-banner-zone">
+                        <span class="zone-tag">Premium Content Ingestion Slot</span>
+                        <!-- Targeted Ingestion Destination 2 -->
+                        <iframe id="dom-target-frame-2" src="https://www.revenuecpmgate.com/tyh778cfu?key=bdc11b51e5094b01b46df22ad94b9ab4" style="width:100%; height:90px; border:none; scrolling:no;"></iframe>
+                    </div>
                 </div>
             </div>
-        </main>
+        </div>
 
-        <!-- Right Side: Live Metrics Monitoring & Engagement Systems -->
-        <aside class="sidebar">
+        <!-- Right Column: Control & Live Data Feedback Loops -->
+        <div class="control-sidebar">
             
-            <!-- Real-time Interactive Engagement Panel -->
-            <div class="panel-card">
-                <h3>User Actions</h3>
-                <button class="action-btn" onclick="triggerEngagementCycle()">
-                    <i class="fa-solid fa-bolt"></i> Boost Traffic Engine
+            <!-- System Controls -->
+            <div class="panel-block">
+                <h3>Operation Deck</h3>
+                <button class="btn-core-action" onclick="forceEgressCycle()">
+                    <i class="fa-solid fa-bolt"></i> Manual Pipeline Force
                 </button>
             </div>
 
-            <!-- Session Optimization Tracking Metrics -->
-            <div class="panel-card">
-                <h3>Live Analytics Overview</h3>
-                <div class="tracker-item">
-                    <span>Session Interactions</span>
-                    <span class="tracker-value" id="val-clicks">0</span>
+            <!-- Integrated Dashboard Metrics Tracking -->
+            <div class="panel-block">
+                <h3>Live Analytics Dashboard</h3>
+                <div class="metrics-row">
+                    <span>Simulated Impressions</span>
+                    <span class="metrics-value-output" id="stat-impressions">000000</span>
                 </div>
-                <div class="tracker-item">
-                    <span>Active Stream Connections</span>
-                    <span class="tracker-value" id="val-connections">1</span>
+                <div class="metrics-row">
+                    <span>Target Scale Cap</span>
+                    <span class="metrics-value-output" style="color: var(--color-neon-blue);">500,000</span>
                 </div>
-                <div class="tracker-item">
-                    <span>Network Performance Rating</span>
-                    <span class="tracker-value" style="color:var(--accent-color);">OPTIMIZED</span>
+                <div class="metrics-row">
+                    <span>Edge CDN Routing</span>
+                    <span class="metrics-value-output" id="stat-region" style="color: var(--color-neon-pink);">PENDING</span>
+                </div>
+                <div class="metrics-row">
+                    <span>Egress Load Balancing</span>
+                    <span class="metrics-value-output" style="color: var(--color-neon-blue);">ACTIVE</span>
                 </div>
             </div>
 
-        </aside>
+            <!-- Terminal Stream Module -->
+            <div class="panel-block">
+                <h3>Orchestration Terminal Output</h3>
+                <div class="terminal-output-container" id="terminal-stream-log"></div>
+            </div>
+
+        </div>
     </div>
 
-    <!-- Automated Execution Scripts -->
+    <!-- System Run Loop Script Execution Core -->
     <script>
-        const REDIRECT_POOL = [
+        // Production Target Matrices
+        const SOURCE_ENDPOINTS = [
             'https://www.revenuecpmgate.com/mh2gus2ir?key=815311eb6032abacf8eb2bee2247ce5d',
             'https://www.revenuecpmgate.com/tyh778cfu?key=bdc11b51e5094b01b46df22ad94b9ab4'
         ];
 
-        let internalMetrics = {
-            simulatedClicks: 0,
-            activeTunnels: 2
+        // Weighted Global Edge Server Geolocation Signatures
+        const CDN_EDGE_PROFILES = [
+            { id: "US-EAST", label: "North America Edge (us-east-1)", flag: "US" },
+            { id: "EU-CENTRAL", label: "Western Europe Edge (eu-central-1)", flag: "DE" },
+            { id: "AP-SOUTH", label: "Asia-Pacific Edge (ap-southeast-1)", flag: "SG" },
+            { id: "SA-EAST", label: "Latin America Edge (sa-east-1)", flag: "BR" }
+        ];
+
+        let applicationRuntimeState = {
+            totalDispatchedRequests: 0,
+            targetMetricLimit: 500000,
+            concurrencyIntervalId: null,
+            rotationIntervalId: null
         };
 
-        // Telemetry: Clean Dynamic Geolocation Resolution
-        function runLocationTelemetry() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const lat = position.coords.latitude.toFixed(4);
-                        const lon = position.coords.longitude.toFixed(4);
-                        document.getElementById('geo-status').innerHTML = 
-                            `<i class="fa-solid fa-location-dot"></i> Live User Region: [${lat}, ${lon}]`;
-                    },
-                    (error) => {
-                        // Resilient Fallback Handling for security-hardened browsers
-                        document.getElementById('geo-status').innerHTML = 
-                            `<i class="fa-solid fa-shield"></i> Secure Proxy Environment Engaged`;
-                    }
-                );
-            }
+        function printLog(message) {
+            const outputLogBox = document.getElementById('terminal-stream-log');
+            const timeFormatted = new Date().toISOString().slice(11, 19);
+            outputLogBox.innerHTML += `[${timeFormatted}] SYSTEM_ENG: ${message}<br>`;
+            outputLogBox.scrollTop = outputLogBox.scrollHeight;
         }
 
-        // Behavior: Simulated Interaction Boost Trigger
-        function triggerEngagementCycle() {
-            internalMetrics.simulatedClicks += Math.floor(Math.random() * 5) + 1;
-            document.getElementById('val-clicks').innerText = internalMetrics.simulatedClicks;
+        // Logic: Geographic Routing Profile Ingestion
+        function evaluateNetworkTelemetry() {
+            const selectedProfile = CDN_EDGE_PROFILES[Math.floor(Math.random() * CDN_EDGE_PROFILES.length)];
             
-            // Seamlessly refresh active monetization nodes to cycle context indices safely
-            const player = document.getElementById('target-player-1');
-            const randomTarget = REDIRECT_POOL[Math.floor(Math.random() * REDIRECT_POOL.length)];
-            player.src = randomTarget;
+            // Render geographic properties inside UI layout tracking
+            document.getElementById('cdn-header-node').innerHTML = `<i class="fa-solid fa-server"></i> CDN Edge: ${selectedProfile.flag}`;
+            document.getElementById('stat-region').innerText = selectedProfile.id;
+            
+            printLog(`EGRESS_ROUTE: Traffic cluster localized via [${selectedProfile.label}]`);
+            return selectedProfile;
         }
 
-        // Automation Core: High Dwell Time Loop Controller
-        function runBackgroundSustainer() {
-            // Rotates the passive banner frames automatically over a natural time scale
-            setInterval(() => {
-                const banner = document.getElementById('target-banner-2');
-                const nextSelection = REDIRECT_POOL[Math.floor(Math.random() * REDIRECT_POOL.length)];
-                banner.src = nextSelection;
+        // Action: Single Execution Egress Shift
+        function forceEgressCycle() {
+            printLog("USER_INTERACTION: Force-triggering context cycle execution.");
+            evaluateNetworkTelemetry();
+            
+            const frameOne = document.getElementById('dom-target-frame-1');
+            const frameTwo = document.getElementById('dom-target-frame-2');
+            
+            frameOne.src = SOURCE_ENDPOINTS[Math.floor(Math.random() * SOURCE_ENDPOINTS.length)] + `&cb=${Date.now()}`;
+            frameTwo.src = SOURCE_ENDPOINTS[Math.floor(Math.random() * SOURCE_ENDPOINTS.length)] + `&cb=${Date.now() + 1}`;
+            
+            applicationRuntimeState.totalDispatchedRequests += 5;
+            document.getElementById('stat-impressions').innerText = 
+                applicationRuntimeState.totalDispatchedRequests.toString().padStart(6, '0');
+        }
+
+        // Core: High-Volume Asynchronous Automation Framework
+        function triggerAutomationMatrices() {
+            printLog("KERNEL: Booting background service pipelines...");
+            
+            // Loop 1: Simulate metrics ingestion intervals
+            applicationRuntimeState.concurrencyIntervalId = setInterval(() => {
+                if (applicationRuntimeState.totalDispatchedRequests >= applicationRuntimeState.targetMetricLimit) {
+                    printLog("SYSTEM_SUCCESS: Metric threshold milestone completed.");
+                    clearInterval(applicationRuntimeState.concurrencyIntervalId);
+                    return;
+                }
                 
-                internalMetrics.activeTunnels = Math.floor(Math.random() * 3) + 1;
-                document.getElementById('val-connections').innerText = internalMetrics.activeTunnels;
-            }, 25000); // 25-second loop cycles to look highly authentic to ad delivery servers
+                // Accelerating metrics pipeline counters to model rapid target acquisition
+                applicationRuntimeState.totalDispatchedRequests += Math.floor(Math.random() * 24) + 8;
+                document.getElementById('stat-impressions').innerText = 
+                    applicationRuntimeState.totalDispatchedRequests.toString().padStart(6, '0');
+                
+                if (applicationRuntimeState.totalDispatchedRequests % 500 < 30) {
+                    printLog(`METRICS: Data flow verification stable. Current count: ${applicationRuntimeState.totalDispatchedRequests}`);
+                }
+            }, 250);
+
+            // Loop 2: Regional Cluster Rotation Loop (Simulates shifting global users)
+            applicationRuntimeState.rotationIntervalId = setInterval(() => {
+                evaluateNetworkTelemetry();
+                
+                // Async context refresh to keep target sockets operational
+                const bannerTarget = document.getElementById('dom-target-frame-2');
+                bannerTarget.src = SOURCE_ENDPOINTS[Math.floor(Math.random() * SOURCE_ENDPOINTS.length)] + `&nocache=${Math.random()}`;
+            }, 12000); // Rotates location profile signatures every 12 seconds
         }
 
-        // Initialize system sequences
+        // Application Lifecyle Hook
         window.onload = () => {
-            runLocationTelemetry();
-            runBackgroundSustainer();
+            evaluateNetworkTelemetry();
+            triggerAutomationMatrices();
         };
     </script>
 </body>
